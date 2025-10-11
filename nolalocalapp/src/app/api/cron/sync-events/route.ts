@@ -3,12 +3,19 @@ import dbConnect from '@/lib/dbConnect';
 import { Event, Category } from '@/models';
 import { fetchEventbriteEvents } from '@/lib/services/eventbrite';
 import { fetchTicketmasterEvents } from '@/lib/services/ticketmaster';
-import { successResponse } from '@/lib/helpers/apiResponse';
+import { successResponse, errorResponse } from '@/lib/helpers/apiResponse';
 
-// This runs automatically via Vercel Cron (when deployed)
-// For now, you can trigger it manually or set up a local cron job
 export async function GET(request: NextRequest) {
   try {
+    // Security: Verify this is from Vercel Cron
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
+    
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      console.log('⚠️ Unauthorized cron attempt');
+      return errorResponse('Unauthorized', 401);
+    }
+
     console.log('🔄 Starting automatic event sync...');
     await dbConnect();
 
@@ -33,50 +40,77 @@ export async function GET(request: NextRequest) {
 
     let newCount = 0;
     let updatedCount = 0;
+    let skippedCount = 0;
 
     // Process each external event
     for (const externalEvent of allExternalEvents) {
-      const existing = await Event.findOne({
-        externalId: externalEvent.externalId,
-        source: externalEvent.source,
-      });
+      try {
+        // Find matching category
+        const category = await Category.findOne({ 
+          name: externalEvent.category 
+        }) || defaultCategory;
 
-      if (existing) {
-        existing.title = externalEvent.title;
-        existing.description = externalEvent.description;
-        existing.date = externalEvent.date;
-        existing.time = externalEvent.time;
-        existing.location = externalEvent.location;
-        existing.sourceUrl = externalEvent.sourceUrl;
-        existing.lastSyncedAt = new Date();
-        await existing.save();
-        updatedCount++;
-      } else {
-        await Event.create({
-          ...externalEvent,
-          category: defaultCategory._id,
-          lastSyncedAt: new Date(),
+        // Truncate long descriptions
+        const description = externalEvent.description?.length > 2000
+          ? externalEvent.description.substring(0, 1997) + '...'
+          : externalEvent.description;
+
+        const existing = await Event.findOne({
+          externalId: externalEvent.externalId,
+          source: externalEvent.source,
         });
-        newCount++;
+
+        if (existing) {
+          // Update existing event
+          existing.title = externalEvent.title;
+          existing.description = description;
+          existing.date = externalEvent.date;
+          existing.time = externalEvent.time;
+          existing.location = externalEvent.location;
+          existing.sourceUrl = externalEvent.sourceUrl;
+          existing.imageUrl = externalEvent.imageUrl;
+          existing.category = category._id as any;
+          existing.lastSyncedAt = new Date();
+          await existing.save();
+          updatedCount++;
+        } else {
+          // Create new event
+          await Event.create({
+            title: externalEvent.title,
+            description: description,
+            date: externalEvent.date,
+            time: externalEvent.time,
+            location: externalEvent.location,
+            sourceUrl: externalEvent.sourceUrl,
+            imageUrl: externalEvent.imageUrl,
+            externalId: externalEvent.externalId,
+            source: externalEvent.source,
+            category: category._id as any,
+            lastSyncedAt: new Date(),
+          });
+          newCount++;
+        }
+      } catch (eventError: any) {
+        console.error(`Error processing event: ${eventError.message}`);
+        skippedCount++;
       }
     }
 
-    console.log(`✅ Sync complete: ${newCount} new, ${updatedCount} updated`);
+    const message = `✅ Sync complete: ${newCount} new, ${updatedCount} updated, ${skippedCount} skipped`;
+    console.log(message);
 
     return successResponse(
       {
         newEvents: newCount,
         updatedEvents: updatedCount,
+        skippedEvents: skippedCount,
         totalProcessed: allExternalEvents.length,
+        timestamp: new Date().toISOString(),
       },
-      `Auto-sync complete: ${newCount} new events, ${updatedCount} updated`
+      message
     );
   } catch (error: any) {
     console.error('❌ Auto-sync error:', error);
-    return successResponse(
-      { error: error.message },
-      'Sync completed with errors',
-      200 // Return 200 so cron doesn't retry
-    );
+    return errorResponse('Sync failed: ' + error.message, 500);
   }
 }

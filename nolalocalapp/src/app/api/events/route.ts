@@ -4,7 +4,7 @@ import { Event } from '@/models';
 import { verifyToken } from '@/lib/helpers/jwt';
 import { successResponse, errorResponse } from '@/lib/helpers/apiResponse';
 
-// GET /api/events - Get all events
+// GET /api/events - Get all events (with calendar support)
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const status = searchParams.get('status') || 'upcoming';
     const search = searchParams.get('search');
+    const month = searchParams.get('month'); // NEW: e.g., "10" for October
+    const year = searchParams.get('year'); // NEW: e.g., "2025"
+    const limit = searchParams.get('limit'); // NEW: for featured events
 
     // Build query
     let query: any = { status };
@@ -29,11 +32,21 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    // NEW: Filter by month and year for calendar
+    if (month && year) {
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);
+      query.date = {
+        $gte: startDate,
+        $lte: endDate,
+      };
+    }
+
     const events = await Event.find(query)
       .populate('category', 'name slug color')
       .populate('creator', 'username')
       .sort({ date: 1 })
-      .limit(100);
+      .limit(limit ? parseInt(limit) : 100);
 
     return successResponse({ events, count: events.length });
   } catch (error: any) {
@@ -47,7 +60,6 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
 
-    // Get token from Authorization header
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
@@ -63,12 +75,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, description, date, time, location, category, imageUrl } = body;
 
-    // Validation
     if (!title || !description || !date || !location || !category) {
       return errorResponse('Missing required fields');
     }
 
-    // Create event
     const event = await Event.create({
       title,
       description,

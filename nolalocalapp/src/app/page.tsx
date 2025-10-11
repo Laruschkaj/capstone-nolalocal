@@ -1,103 +1,214 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import WeatherWidget from '@/components/weather/WeatherWidget';
+import { useAuth } from '@/contexts/AuthContext';
+import Navigation from '@/components/layout/Navigation';
+import EventCard from '@/components/events/EventCard';
+
+const heroImages = [
+  'https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064911/hero-1_qencdg.jpg',
+  'https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064911/hero-2_c336rk.jpg',
+  'https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064911/hero-3_atdpa0.jpg',
+  'https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064911/hero-4_gtgzat.jpg',
+];
+
+interface Event {
+  _id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  imageUrl?: string;
+  category: {
+    name: string;
+    color: string;
+  };
+}
+
+export default function LandingPage() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showNav, setShowNav] = useState(false);
+  const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  // Auto-advance hero carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle scroll for nav reveal
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setShowNav(true);
+      } else {
+        setShowNav(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Fetch featured events
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const response = await fetch('/api/events?limit=6');
+        const data = await response.json();
+        if (data.success) {
+          setFeaturedEvents(data.data.events.slice(0, 6));
+        }
+      } catch (error) {
+        console.error('Error fetching featured events:', error);
+      }
+    };
+    fetchFeatured();
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-[#fcf9e6]">
+      {/* Sticky Navigation - only show after scroll */}
+      {showNav && <Navigation />}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      {/* Hero Section */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Background Images with Parallax */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentImageIndex}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 1.4, ease: [0.25, 1, 0.5, 1] }}
+            className="absolute inset-0"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${heroImages[currentImageIndex]})`,
+                filter: 'brightness(0.7)',
+              }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Hero Text */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
+            className="text-6xl md:text-8xl font-bold text-white mb-6 leading-tight"
+            style={{ fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.02em' }}
           >
-            Read our docs
-          </a>
+            Browse Upcoming Events<br />In New Orleans
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
+            className="text-xl md:text-2xl text-white/90 mb-12 max-w-2xl"
+            style={{ fontFamily: 'Open Sans, sans-serif' }}
+          >
+            Discover music, arts, food, and culture in the heart of NOLA
+          </motion.p>
+
+          <motion.button
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.6, ease: [0.25, 1, 0.5, 1] }}
+            onClick={() => router.push('/events')}
+            className="px-12 py-4 bg-white text-gray-900 text-lg font-semibold rounded-2xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl"
+            style={{ fontFamily: 'Open Sans, sans-serif' }}
+          >
+            Explore Events
+          </motion.button>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.2 }}
+            className="absolute bottom-12"
+          >
+            <motion.div
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 2, ease: 'easeInOut', repeat: Infinity }}
+              className="text-white text-4xl"
+            >
+              ↓
+            </motion.div>
+          </motion.div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+
+        {/* Image Indicators */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentImageIndex(index)}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === currentImageIndex ? 'bg-white w-8' : 'bg-white/40'
+              }`}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Featured Events Section */}
+      <section className="max-w-7xl mx-auto px-6 py-24">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-5xl font-bold text-gray-900 mb-12"
+          style={{ fontFamily: 'Bebas Neue, sans-serif' }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Featured Events
+        </motion.h2>
+
+        {/* Horizontal Scroll Container */}
+        <div className="overflow-x-auto pb-6 -mx-6 px-6">
+          <div className="flex gap-6" style={{ width: 'max-content' }}>
+            {featuredEvents.map((event, index) => (
+              <div key={event._id} className="w-80 flex-shrink-0">
+                <EventCard event={event} index={index} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* View All Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="text-center mt-12"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button
+            onClick={() => router.push('/events')}
+            className="px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-lg font-semibold"
+            style={{ fontFamily: 'Open Sans, sans-serif' }}
+          >
+            View All Events →
+          </button>
+        </motion.div>
+      </section>
     </div>
   );
 }
