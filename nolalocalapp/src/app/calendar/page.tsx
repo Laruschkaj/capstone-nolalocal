@@ -42,6 +42,7 @@ export default function CalendarPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Fetch categories
   useEffect(() => {
@@ -160,6 +161,11 @@ export default function CalendarPage() {
   const now = new Date();
   const canGoPrevious = currentDate.getMonth() !== now.getMonth() || currentDate.getFullYear() !== now.getFullYear();
 
+  const getCategoryName = () => {
+    if (selectedCategory === 'all') return 'All Categories';
+    return categories.find(cat => cat._id === selectedCategory)?.name || 'All Categories';
+  };
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
@@ -168,14 +174,14 @@ export default function CalendarPage() {
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left: Calendar Grid */}
+            {/* Left: Calendar - Fully Contained and Sticky */}
             <div className="lg:col-span-5">
               <div 
                 className="rounded-2xl shadow-lg p-6 sticky top-24"
                 style={{ backgroundColor: 'var(--card-bg)' }}
               >
-                {/* Month Header - Exact same height as right side date header */}
-                <div className="flex items-center justify-between h-[48px] mb-6">
+                {/* Month Header - Inside calendar box */}
+                <div className="flex items-center justify-between mb-6">
                   <h2 
                     className="text-4xl font-bold leading-none"
                     style={{ 
@@ -272,7 +278,7 @@ export default function CalendarPage() {
                   })}
                 </div>
 
-                {/* Category Filter - Confined dropdown with scroll */}
+                {/* Category Filter - Custom dropdown */}
                 <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
                   <label 
                     className="block text-xs font-semibold mb-2"
@@ -283,33 +289,77 @@ export default function CalendarPage() {
                   >
                     FILTER BY CATEGORY
                   </label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                    style={{ 
-                      fontFamily: 'Open Sans, sans-serif',
+                  <div className="relative">
+                    <button
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="w-full px-4 py-2 rounded-lg text-sm text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        backgroundColor: 'var(--card-bg)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-color)'
+                      }}
+                    >
+                      <span>{getCategoryName()}</span>
+                      <span className="material-symbols-outlined text-sm">
+                        {dropdownOpen ? 'expand_less' : 'expand_more'}
+                      </span>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {dropdownOpen && (
+                      <div 
+                      className="absolute w-full mt-1 rounded-lg shadow-lg overflow-hidden z-10"
+                      style={{ 
                       backgroundColor: 'var(--card-bg)',
-                      color: 'var(--text-primary)',
                       border: '1px solid var(--border-color)',
-                      maxHeight: '200px',
-                      overflowY: 'auto'
-                    }}
-                    size={1}
-                  >
-                    <option value="all">All Categories</option>
-                    {Array.isArray(categories) && categories.map(cat => (
-                      <option key={cat._id} value={cat._id}>{cat.name}</option>
-                    ))}
-                  </select>
+                      maxHeight: '160px'
+                      }}
+                      >
+                     <div className="overflow-y-auto" style={{ maxHeight: '160px' }}>
+                          <button
+                            onClick={() => {
+                              setSelectedCategory('all');
+                              setDropdownOpen(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-primary)',
+                              backgroundColor: selectedCategory === 'all' ? 'rgba(128, 128, 128, 0.1)' : 'transparent'
+                            }}
+                          >
+                            All Categories
+                          </button>
+                          {categories.map(cat => (
+                            <button
+                              key={cat._id}
+                              onClick={() => {
+                                setSelectedCategory(cat._id);
+                                setDropdownOpen(false);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                              style={{ 
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-primary)',
+                                backgroundColor: selectedCategory === cat._id ? 'rgba(128, 128, 128, 0.1)' : 'transparent'
+                              }}
+                            >
+                              {cat.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right: Event List */}
+            {/* Right: Event List - Scrollable */}
             <div className="lg:col-span-7">
-              {/* Selected Date Header - Exact same height as calendar month */}
-              <div className="h-[48px] mb-6 flex items-center">
+              {/* Selected Date Header */}
+              <div className="mb-6">
                 <h3 
                   className="text-4xl font-bold leading-none"
                   style={{ 
