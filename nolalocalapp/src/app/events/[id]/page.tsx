@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import Navigation from '@/components/layout/Navigation';
 import { getEventCardColor, getTextColor } from '@/lib/data/colorPalette';
 
 interface Event {
@@ -59,6 +60,7 @@ export default function EventDetailPage() {
       setLoading(false);
     }
   };
+
 const handleLike = async () => {
     if (!user) {
       router.push('/login');
@@ -120,35 +122,6 @@ const handleLike = async () => {
     router.back();
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
-        <p className="text-gray-600">Loading event...</p>
-      </div>
-    );
-  }
-
-  if (!event) {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 text-lg">Event not found</p>
-          <button
-            onClick={() => router.push('/events')}
-            className="mt-4 text-indigo-600 hover:text-indigo-800"
-          >
-            ← Back to events
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const isCreator = event.creator && user && user.id === event.creator._id;
-  const isExternalEvent = event.source !== 'user';
-  const bgColor = getEventCardColor(event._id);
-  const textColor = getTextColor(bgColor);
-
   // Format time to 12-hour with AM/PM
   const formatTime = (time?: string) => {
     if (!time) return null;
@@ -159,15 +132,65 @@ const handleLike = async () => {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
+        <Navigation />
+        <div className="flex-1 flex items-center justify-center">
+          <p style={{ fontFamily: 'Open Sans, sans-serif', color: 'var(--text-secondary)' }}>
+            Loading event...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
+        <Navigation />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg mb-4" style={{ fontFamily: 'Open Sans, sans-serif', color: 'var(--text-secondary)' }}>
+              Event not found
+            </p>
+            <button
+              onClick={() => router.push('/events')}
+              className="px-6 py-3 rounded-xl font-semibold"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                backgroundColor: '#4F46E5',
+                color: '#FFFFFF'
+              }}
+            >
+              Back to events
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isCreator = event.creator && user && user.id === event.creator._id;
+  const isExternalEvent = event.source !== 'user';
+  const bgColor = getEventCardColor(event._id);
+  const textColor = getTextColor(bgColor);
+
+  
+
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
-      {/* Header */}
-      <header className="bg-[#F5F5F5]/90 backdrop-blur-md shadow sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+      <Navigation />
+
+      <header className="max-w-5xl mx-auto px-6 py-6">
+        <div className="flex justify-between items-center">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+            className="flex items-center gap-2 font-medium transition-colors hover:opacity-70"
+            style={{ 
+              fontFamily: 'Open Sans, sans-serif',
+              color: 'var(--text-primary)'
+            }}
           >
             <span className="material-symbols-outlined">arrow_back</span>
             Back
@@ -177,13 +200,24 @@ const handleLike = async () => {
             <div className="flex gap-2">
               <button
                 onClick={handleEdit}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                className="px-4 py-2 rounded-lg font-semibold transition-colors"
+                style={{
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: '#4F46E5',
+                  color: '#FFFFFF'
+                }}
               >
                 Edit
               </button>
+
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="px-4 py-2 rounded-lg font-semibold transition-colors"
+                style={{
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: '#EF4444',
+                  color: '#FFFFFF'
+                }}
               >
                 Delete
               </button>
@@ -193,7 +227,7 @@ const handleLike = async () => {
       </header>
 
       {/* Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-5xl mx-auto px-6 pb-12">
         <div 
           className="rounded-3xl overflow-hidden shadow-2xl p-8"
           style={{ backgroundColor: bgColor }}
@@ -342,7 +376,7 @@ const handleLike = async () => {
               </span>
               {likesCount > 0 && (
               <span 
-                 style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '18px' }}
+                 style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '16px' }}
                 >
                  {likesCount} {likesCount === 1 ? 'like' : 'likes'}
               </span>
