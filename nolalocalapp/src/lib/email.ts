@@ -112,17 +112,19 @@ export async function sendWelcomeEmail(to: string, username: string) {
             <h1>NOLALOCAL</h1>
           </div>
           <div class="content">
-            <h2>Welcome, ${username}! 🎉</h2>
+          <h2>Welcome, ${username}!</h2>
             <p>Thanks for joining NolaLocal - your go-to platform for discovering amazing events and local guides in New Orleans!</p>
-            <p>Here's what you can do:</p>
-            <ul>
-              <li>Discover upcoming events in New Orleans</li>
-              <li>Explore local guides from insiders</li>
-              <li>Save your favorite events</li>
-              <li>Create and share your own events</li>
+            <p style="margin-bottom: 16px;">Here's what you can do:</p>
+              <ul style="color: #666666; font-size: 16px; line-height: 1.8; margin-left: 0; padding-left: 20px; margin-bottom: 24px;">
+              <li style="margin-bottom: 8px;">Discover upcoming events in New Orleans</li>
+              <li style="margin-bottom: 8px;">Explore local guides from insiders</li>
+              <li style="margin-bottom: 8px;">Save your favorite events</li>
+              <li style="margin-bottom: 8px;">Create and share your own events</li>
             </ul>
-            <a href="${baseUrl}/events" class="button">Explore Events</a>
-          </div>
+            <div style="text-align: left;">
+              <a href="${baseUrl}/events" class="button">Explore Events</a>
+            </div>
+        </div>
           <div class="footer">
             <p>NolaLocal - Discover New Orleans Like a Local</p>
           </div>
