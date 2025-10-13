@@ -53,7 +53,8 @@ export default function WeatherWidget() {
           ease: 'linear',
           repeat: Infinity,
         }}
-        className="flex whitespace-nowrap text-base text-gray-700"
+        className="flex whitespace-nowrap text-base"
+        style={{ color: 'var(--text-primary)' }}
       >
         <span>{weatherText}</span>
         <span>{weatherText}</span>

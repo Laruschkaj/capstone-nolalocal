@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fcf9e6; /* Light cream background */
-  --foreground: #171717;
+  --background: #F5F5F5;
+  --foreground: #000000;
+  --card-bg: #FFFFFF;
+  --nav-bg: rgba(245, 245, 245, 0.8);
+  --border-color: #E5E7EB;
+  --text-primary: #000000;
+  --text-secondary: #4B5563;
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --card-bg: #1a1a1a;
+  --nav-bg: rgba(0, 0, 0, 0.8);
+  --border-color: #374151;
+  --text-primary: #FFFFFF;
+  --text-secondary: #D1D5DB;
 }
 
 @theme inline {
@@ -12,17 +27,11 @@
   --font-sans: var(--font-open-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-open-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Custom form input styles */
@@ -34,9 +43,27 @@ input[type="time"],
 textarea,
 select {
   color: #111827 !important;
+  background-color: #FFFFFF !important;
+}
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="date"],
+.dark input[type="time"],
+.dark textarea,
+.dark select {
+  color: #FFFFFF !important;
+  background-color: #1a1a1a !important;
+  border-color: #374151 !important;
 }
 
 input::placeholder,
 textarea::placeholder {
   color: #9ca3af !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6b7280 !important;
 }

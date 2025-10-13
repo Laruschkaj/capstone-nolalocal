@@ -31,9 +31,13 @@ interface Event {
 export default function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [liking, setLiking] = useState(false);
   const { user, token } = useAuth();
   const router = useRouter();
   const params = useParams();
+
 
   useEffect(() => {
     fetchEvent();
@@ -46,11 +50,42 @@ export default function EventDetailPage() {
 
       if (data.success) {
         setEvent(data.data.event);
+        setLikesCount(data.data.event.likesCount || 0);
+        setLiked(data.data.event.likes?.includes(user?.id || '') || false);
       }
     } catch (error) {
       console.error('Error fetching event:', error);
     } finally {
       setLoading(false);
+    }
+  };
+const handleLike = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    if (liking) return;
+
+    setLiking(true);
+    try {
+      const response = await fetch(`/api/events/${params.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setLiked(data.data.liked);
+        setLikesCount(data.data.likesCount);
+      }
+    } catch (error) {
+      console.error('Error liking event:', error);
+    } finally {
+      setLiking(false);
     }
   };
 
@@ -87,7 +122,7 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fcf9e6] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
         <p className="text-gray-600">Loading event...</p>
       </div>
     );
@@ -95,7 +130,7 @@ export default function EventDetailPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-[#fcf9e6] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 text-lg">Event not found</p>
           <button
@@ -125,9 +160,9 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fcf9e6]">
+    <div className="min-h-screen bg-[#F5F5F5]">
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-md shadow sticky top-0 z-50">
+      <header className="bg-[#F5F5F5]/90 backdrop-blur-md shadow sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <button
             onClick={handleBack}
@@ -200,76 +235,74 @@ export default function EventDetailPage() {
             </span>
           </div>
 
-          {/* Event Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div>
-              <p 
-                className="font-bold text-sm mb-1"
-                style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8 }}
+          {/* Event Details - Vertical Layout */}
+          <div className="mb-8 space-y-4">
+           <div>
+            <p 
+               className="font-bold text-sm mb-1 uppercase"
+               style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8, fontSize: '16px' }}
               >
-                DATE
-              </p>
-              <p 
-                className="text-lg font-semibold"
-                style={{ color: textColor, fontFamily: 'Open Sans, sans-serif' }}
-              >
+                DATE:
+            </p>
+            <p 
+               style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '16px' }}
+             >
                 {new Date(event.date).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            </div>
+                 weekday: 'long',
+                 year: 'numeric',
+                 month: 'long',
+                 day: 'numeric',
+             })}
+           </p>
+         </div>
 
-            {event.time && (
-              <div>
-                <p 
-                  className="font-bold text-sm mb-1"
-                  style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8 }}
-                >
-                  TIME
-                </p>
-                <p 
-                  className="text-lg font-semibold"
-                  style={{ color: textColor, fontFamily: 'Open Sans, sans-serif' }}
-                >
-                  {formatTime(event.time)}
-                </p>
-              </div>
-            )}
+      {event.time && (
+      <div>
+      <p 
+        className="font-bold text-sm mb-1 uppercase"
+        style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8, fontSize: '16px' }}
+      >
+        TIME:
+      </p>
+      <p 
+        style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '16px' }}
+      >
+        {formatTime(event.time)}
+      </p>
+    </div>
+  )}
 
-            <div>
-              <p 
-                className="font-bold text-sm mb-1"
-                style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8 }}
-              >
-                LOCATION
-              </p>
-              <p 
-                className="text-lg font-semibold"
-                style={{ color: textColor, fontFamily: 'Open Sans, sans-serif' }}
-              >
-                {event.location}
-              </p>
-            </div>
+  <div>
+    <p 
+      className="font-bold text-sm mb-1 uppercase"
+      style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8, fontSize: '16px' }}
+    >
+      LOCATION:
+    </p>
+    <p 
+      style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '16px' }}
+    >
+      {event.location}
+    </p>
+  </div>
           </div>
 
           {/* Description */}
           <div className="mb-8">
             <h2 
-              className="text-2xl font-bold mb-4"
+              className="text-2xl font-bold mb-4 uppercase"
               style={{ color: textColor, fontFamily: 'Open Sans, sans-serif' }}
             >
-              About this event
+              ABOUT THIS EVENT
             </h2>
             <p 
-              className="text-lg leading-relaxed whitespace-pre-line"
-              style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.9 }}
+              className="leading-relaxed whitespace-pre-line"
+              style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.9, fontSize: '16px' }}
             >
               {event.description}
             </p>
           </div>
+
 
           {/* External Event Link */}
           {isExternalEvent && event.sourceUrl && (
@@ -290,14 +323,31 @@ export default function EventDetailPage() {
             </div>
           )}
 
-          {/* Footer - Source in bottom right */}
-          <div className="flex justify-between items-end mt-8 pt-6 border-t" style={{ borderColor: `${textColor}20` }}>
-            <p 
-              className="text-sm"
-              style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.7 }}
+          {/* Footer - Likes and Source */}
+          <div className="flex justify-between items-center mt-8 pt-6 border-t" style={{ borderColor: `${textColor}20` }}>
+            {/* Likes */}
+            <button
+              onClick={handleLike}
+              disabled={liking}
+              className="flex items-center gap-2 transition-transform hover:scale-105"
             >
-              {event.likesCount} {event.likesCount === 1 ? 'person' : 'people'} interested
-            </p>
+              <span 
+                className="material-symbols-outlined text-3xl"
+                style={{ 
+                  color: 'white',
+                  fontVariationSettings: liked ? "'FILL' 1" : "'FILL' 0"
+                }}
+              >
+                favorite
+              </span>
+              {likesCount > 0 && (
+              <span 
+                 style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '18px' }}
+                >
+                 {likesCount} {likesCount === 1 ? 'like' : 'likes'}
+              </span>
+                  )}
+            </button>
             
             {isExternalEvent && (
               <p 

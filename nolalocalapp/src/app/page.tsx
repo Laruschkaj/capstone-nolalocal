@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import WeatherWidget from '@/components/weather/WeatherWidget';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/layout/Navigation';
 import EventCard from '@/components/events/EventCard';
@@ -23,17 +22,23 @@ interface Event {
   location: string;
   imageUrl?: string;
   category: {
+    _id: string;
     name: string;
     color: string;
   };
+  likes?: string[];
+  likesCount?: number;
 }
 
 export default function LandingPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showNav, setShowNav] = useState(false);
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   // Auto-advance hero carousel
   useEffect(() => {
@@ -60,10 +65,10 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const response = await fetch('/api/events?limit=6');
+        const response = await fetch('/api/events?limit=10');
         const data = await response.json();
         if (data.success) {
-          setFeaturedEvents(data.data.events.slice(0, 6));
+          setFeaturedEvents(data.data.events.slice(0, 10));
         }
       } catch (error) {
         console.error('Error fetching featured events:', error);
@@ -72,13 +77,39 @@ export default function LandingPage() {
     fetchFeatured();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
+  // Check scroll position
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollButtons);
+      return () => container.removeEventListener('scroll', checkScrollButtons);
+    }
+  }, [featuredEvents]);
+
+  // Scroll functions
+  const scrollLeftFn = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRightFn = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#fcf9e6]">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Sticky Navigation - only show after scroll */}
       {showNav && <Navigation />}
 
@@ -120,8 +151,11 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
-            className="text-xl md:text-2xl text-white/90 mb-12 max-w-2xl"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+            className="text-xl md:text-2xl text-white mb-12 max-w-2xl font-bold"
+            style={{ 
+              fontFamily: 'Open Sans, sans-serif',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+            }}
           >
             Discover music, arts, food, and culture in the heart of NOLA
           </motion.p>
@@ -131,10 +165,10 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6, ease: [0.25, 1, 0.5, 1] }}
             onClick={() => router.push('/events')}
-            className="px-12 py-4 bg-white text-gray-900 text-lg font-semibold rounded-2xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl"
+            className="px-12 py-4 bg-white text-gray-900 text-lg font-semibold rounded-2xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl mb-8"
             style={{ fontFamily: 'Open Sans, sans-serif' }}
           >
-            Explore Events
+            Explore
           </motion.button>
 
           {/* Scroll Indicator */}
@@ -142,7 +176,6 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.2 }}
-            className="absolute bottom-12"
           >
             <motion.div
               animate={{ y: [0, 12, 0] }}
@@ -175,21 +208,80 @@ export default function LandingPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-5xl font-bold text-gray-900 mb-12"
-          style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+          className="text-5xl font-bold mb-12"
+          style={{ 
+            fontFamily: 'Bebas Neue, sans-serif',
+            color: 'var(--text-primary)'
+          }}
         >
           Featured Events
         </motion.h2>
 
-        {/* Horizontal Scroll Container */}
-        <div className="overflow-x-auto pb-6 -mx-6 px-6">
-          <div className="flex gap-6" style={{ width: 'max-content' }}>
-            {featuredEvents.map((event, index) => (
-              <div key={event._id} className="w-80 flex-shrink-0">
-                <EventCard event={event} index={index} />
-              </div>
-            ))}
+        {/* Carousel Container */}
+        <div className="relative">
+          {/* Left Arrow */}
+          <button
+            onClick={scrollLeftFn}
+            disabled={!canScrollLeft}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+              style={{ 
+                marginLeft: '-40px',
+                backgroundColor: canScrollLeft ? 'rgba(255, 255, 255, 0.3)' : 'rgba(128, 128, 128, 0.15)',
+                cursor: canScrollLeft ? 'pointer' : 'not-allowed',
+                opacity: canScrollLeft ? 1 : 0.4
+             }}
+            >
+          <span 
+               className="material-symbols-outlined"
+               style={{ 
+                color: 'var(--text-primary)',
+               fontSize: '64px',
+              fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48"
+             }}
+            >
+             chevron_left
+           </span>
+          </button>
+
+          {/* Scrollable Container */}
+          <div 
+            ref={scrollContainerRef}
+            className="overflow-x-auto pb-6 hide-scrollbar"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <div className="flex gap-6" style={{ width: 'max-content' }}>
+              {featuredEvents.map((event, index) => (
+                <div key={event._id} className="w-80 flex-shrink-0">
+                  <EventCard event={event} index={index} />
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Right Arrow */}
+          {/* Right Arrow */}
+          <button
+             onClick={scrollRightFn}
+             disabled={!canScrollRight}
+             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+            style={{ 
+             marginRight: '-40px',
+             backgroundColor: canScrollRight ? 'rgba(255, 255, 255, 0.3)' : 'rgba(128, 128, 128, 0.15)',
+             cursor: canScrollRight ? 'pointer' : 'not-allowed',
+             opacity: canScrollRight ? 1 : 0.4
+           }}
+            >
+          <span 
+           className="material-symbols-outlined"
+            style={{ 
+            color: 'var(--text-primary)',
+            fontSize: '64px',
+            fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48"
+           }}
+           >
+           chevron_right
+           </span>
+          </button>
         </div>
 
         {/* View All Button */}
@@ -202,13 +294,20 @@ export default function LandingPage() {
         >
           <button
             onClick={() => router.push('/events')}
-            className="px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-lg font-semibold"
+            className="px-8 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors text-lg font-semibold"
             style={{ fontFamily: 'Open Sans, sans-serif' }}
           >
             View All Events →
           </button>
         </motion.div>
       </section>
+
+      {/* Hide scrollbar CSS */}
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }

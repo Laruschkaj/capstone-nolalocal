@@ -1,3 +1,4 @@
+///src/app/calendar/page.tsx
 'use client';
 
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
@@ -176,7 +177,7 @@ export default function CalendarPage() {
 
   return (
     <ProtectedRoute>
-    <div className="min-h-screen bg-[#fcf9e6]">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Navigation */}
         <Navigation />
 

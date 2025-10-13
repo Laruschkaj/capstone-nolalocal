@@ -56,7 +56,7 @@ export default function EventsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#fcf9e6]">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <Navigation />
 
         {/* Main Content */}
