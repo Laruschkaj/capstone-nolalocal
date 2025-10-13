@@ -1,4 +1,3 @@
-///src/app/admin/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -111,8 +110,11 @@ export default function AdminDashboard() {
           {/* Header */}
           <div className="mb-8 flex justify-between items-center">
             <h1 
-              className="text-5xl font-bold text-gray-900"
-              style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+              className="text-5xl font-bold"
+              style={{ 
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: 'var(--text-primary)'
+              }}
             >
               ADMIN DASHBOARD
             </h1>
@@ -127,53 +129,136 @@ export default function AdminDashboard() {
           </div>
 
           {loading ? (
-            <p className="text-center text-gray-600">Loading dashboard...</p>
+            <p 
+              className="text-center"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              Loading dashboard...
+            </p>
           ) : (
             <>
               {/* Stats Grid */}
               {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                  <div className="bg-white rounded-2xl p-6 shadow-md">
-                    <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div 
+                    className="rounded-2xl p-6 shadow-md"
+                    style={{ backgroundColor: 'var(--card-bg)' }}
+                  >
+                    <p 
+                      className="text-sm mb-2"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
                       Total Users
                     </p>
-                    <p className="text-4xl font-bold text-gray-900" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+                    <p 
+                      className="text-4xl font-bold"
+                      style={{ 
+                        fontFamily: 'Bebas Neue, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
                       {stats.totalUsers}
                     </p>
                   </div>
 
-                  <div className="bg-white rounded-2xl p-6 shadow-md">
-                    <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div 
+                    className="rounded-2xl p-6 shadow-md"
+                    style={{ backgroundColor: 'var(--card-bg)' }}
+                  >
+                    <p 
+                      className="text-sm mb-2"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
                       Total Events
                     </p>
-                    <p className="text-4xl font-bold text-gray-900" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+                    <p 
+                      className="text-4xl font-bold"
+                      style={{ 
+                        fontFamily: 'Bebas Neue, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
                       {stats.totalEvents}
                     </p>
                   </div>
 
-                  <div className="bg-white rounded-2xl p-6 shadow-md">
-                    <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div 
+                    className="rounded-2xl p-6 shadow-md"
+                    style={{ backgroundColor: 'var(--card-bg)' }}
+                  >
+                    <p 
+                      className="text-sm mb-2"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
                       User Events
                     </p>
-                    <p className="text-4xl font-bold text-gray-900" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+                    <p 
+                      className="text-4xl font-bold"
+                      style={{ 
+                        fontFamily: 'Bebas Neue, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
                       {stats.userEvents}
                     </p>
                   </div>
 
-                  <div className="bg-white rounded-2xl p-6 shadow-md">
-                    <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div 
+                    className="rounded-2xl p-6 shadow-md"
+                    style={{ backgroundColor: 'var(--card-bg)' }}
+                  >
+                    <p 
+                      className="text-sm mb-2"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
                       External Events
                     </p>
-                    <p className="text-4xl font-bold text-gray-900" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+                    <p 
+                      className="text-4xl font-bold"
+                      style={{ 
+                        fontFamily: 'Bebas Neue, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
                       {stats.externalEvents}
                     </p>
                   </div>
 
-                  <div className="bg-white rounded-2xl p-6 shadow-md">
-                    <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div 
+                    className="rounded-2xl p-6 shadow-md"
+                    style={{ backgroundColor: 'var(--card-bg)' }}
+                  >
+                    <p 
+                      className="text-sm mb-2"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
                       Categories
                     </p>
-                    <p className="text-4xl font-bold text-gray-900" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+                    <p 
+                      className="text-4xl font-bold"
+                      style={{ 
+                        fontFamily: 'Bebas Neue, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
                       {stats.totalCategories}
                     </p>
                   </div>
@@ -183,40 +268,89 @@ export default function AdminDashboard() {
               {/* Recent Events */}
               <div className="mb-8">
                 <h2 
-                  className="text-3xl font-bold text-gray-900 mb-4"
-                  style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+                  className="text-3xl font-bold mb-4"
+                  style={{ 
+                    fontFamily: 'Bebas Neue, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
                 >
                   RECENT EVENTS
                 </h2>
-                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div 
+                  className="rounded-2xl shadow-md overflow-hidden"
+                  style={{ backgroundColor: 'var(--card-bg)' }}
+                >
                   <table className="w-full">
-                    <thead className="bg-gray-100">
+                    <thead 
+                      style={{ 
+                        backgroundColor: 'rgba(128, 128, 128, 0.1)'
+                      }}
+                    >
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Title
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Category
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Source
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Creator
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Date
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
                       {recentEvents.map(event => (
                         <tr 
                           key={event._id} 
                           onClick={() => router.push(`/events/${event._id}`)}
-                          className="hover:bg-gray-50 cursor-pointer"
+                          className="cursor-pointer transition-colors"
+                          style={{ borderBottom: '1px solid var(--border-color)' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(128, 128, 128, 0.05)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                          <td className="px-6 py-4 text-sm text-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <td 
+                            className="px-6 py-4 text-sm"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-primary)'
+                            }}
+                          >
                             {event.title}
                           </td>
                           <td className="px-6 py-4">
@@ -231,13 +365,31 @@ export default function AdminDashboard() {
                               {event.category.name}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <td 
+                            className="px-6 py-4 text-sm"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
                             {event.source}
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <td 
+                            className="px-6 py-4 text-sm"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
                             {event.creator?.username || 'External'}
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <td 
+                            className="px-6 py-4 text-sm"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
                             {new Date(event.date).toLocaleDateString()}
                           </td>
                         </tr>
@@ -250,51 +402,114 @@ export default function AdminDashboard() {
               {/* All Users */}
               <div>
                 <h2 
-                  className="text-3xl font-bold text-gray-900 mb-4"
-                  style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+                  className="text-3xl font-bold mb-4"
+                  style={{ 
+                    fontFamily: 'Bebas Neue, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
                 >
                   ALL USERS
                 </h2>
-                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div 
+                  className="rounded-2xl shadow-md overflow-hidden"
+                  style={{ backgroundColor: 'var(--card-bg)' }}
+                >
                   <table className="w-full">
-                    <thead className="bg-gray-100">
+                    <thead 
+                      style={{ 
+                        backgroundColor: 'rgba(128, 128, 128, 0.1)'
+                      }}
+                    >
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Username
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Email
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Role
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <th 
+                          className="px-6 py-3 text-left text-xs font-bold uppercase"
+                          style={{ 
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
                           Joined
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
                       {allUsers.map(u => (
-                        <tr key={u._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm text-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <tr 
+                          key={u._id}
+                          className="transition-colors"
+                          style={{ borderBottom: '1px solid var(--border-color)' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(128, 128, 128, 0.05)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <td 
+                            className="px-6 py-4 text-sm"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-primary)'
+                            }}
+                          >
                             {u.username}
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <td 
+                            className="px-6 py-4 text-sm"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
                             {u.email}
                           </td>
                           <td className="px-6 py-4">
                             <span 
-                              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                                u.isAdmin 
-                                  ? 'bg-purple-100 text-purple-800' 
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}
-                              style={{ fontFamily: 'Open Sans, sans-serif' }}
-                            >
-                              {u.isAdmin ? 'Admin' : 'User'}
+                              className="inline-block px-3 py-1 rounded-full text-xs font-semibold"
+                              style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              backgroundColor: u.isAdmin 
+                              ? '#E9D5FF'  // Purple for Admin
+                              : 'var(--card-bg)',  // Uses card background variable
+                              color: u.isAdmin 
+                              ? '#6B21A8'   // Dark purple text for Admin
+                              : 'var(--text-secondary)',  // Gray text matching table secondary text
+                              border: u.isAdmin ? 'none' : '1px solid var(--border-color)'  // Add subtle border for User badge
+                              }}
+                             >
+                             {u.isAdmin ? 'Admin' : 'User'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <td 
+                            className="px-6 py-4 text-sm"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
                             {new Date(u.createdAt).toLocaleDateString()}
                           </td>
                         </tr>
