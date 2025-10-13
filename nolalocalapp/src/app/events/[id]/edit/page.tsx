@@ -1,12 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
+import Navigation from '@/components/layout/Navigation';
+import ProtectedRoute from '@/components/layout/ProtectedRoute';
+import { useDropzone } from 'react-dropzone';
 
 interface Category {
   _id: string;
   name: string;
+  slug: string;
+  color: string;
 }
 
 interface Event {
@@ -16,6 +21,7 @@ interface Event {
   date: string;
   time?: string;
   location: string;
+  imageUrl?: string;
   category: {
     _id: string;
   };
@@ -29,10 +35,14 @@ export default function EditEventPage() {
   const [location, setLocation] = useState('');
   const [category, setCategory] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   const params = useParams();
 
@@ -50,10 +60,11 @@ export default function EditEventPage() {
         const event: Event = data.data.event;
         setTitle(event.title);
         setDescription(event.description);
-        setDate(event.date.split('T')[0]); // Format date for input
+        setDate(event.date.split('T')[0]);
         setTime(event.time || '');
         setLocation(event.location);
         setCategory(event.category._id);
+        setCurrentImageUrl(event.imageUrl || null);
       }
     } catch (error) {
       console.error('Error fetching event:', error);
@@ -74,12 +85,78 @@ export default function EditEventPage() {
     }
   };
 
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp']
+    },
+    maxFiles: 1,
+    maxSize: 5242880,
+  });
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setCurrentImageUrl(null);
+  };
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'nolalocal-events');
+    
+    let folder = 'nolalocal/user-events';
+    
+    if (user?.isAdmin) {
+      folder = 'nolalocal/admin-events';
+    } else {
+      folder = 'nolalocal/user-events';
+    }
+    
+    formData.append('folder', folder);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
+      let imageUrl = currentImageUrl;
+
+      if (imageFile) {
+        setUploading(true);
+        imageUrl = await uploadToCloudinary(imageFile);
+        setUploading(false);
+      }
+
       const response = await fetch(`/api/events/${params.id}`, {
         method: 'PUT',
         headers: {
@@ -89,10 +166,11 @@ export default function EditEventPage() {
         body: JSON.stringify({
           title,
           description,
-          date,
+          date: date ? new Date(date + 'T00:00:00').toISOString() : date,
           time,
           location,
           category,
+          imageUrl: imageUrl || undefined,
         }),
       });
 
@@ -113,138 +191,349 @@ export default function EditEventPage() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
+      <ProtectedRoute>
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+          <p style={{ fontFamily: 'Open Sans, sans-serif', color: 'var(--text-secondary)' }}>Loading...</p>
+        </div>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-3xl font-bold text-gray-900">Edit Event</h1>
-        </div>
-      </header>
+    <ProtectedRoute>
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+        <Navigation />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
+        <header className="max-w-4xl mx-auto px-6 py-8">
+          <h1 
+            className="text-5xl font-bold"
+            style={{ 
+              fontFamily: 'Bebas Neue, sans-serif',
+              color: 'var(--text-primary)'
+            }}
+          >
+            EDIT EVENT
+          </h1>
+          <p 
+            className="mt-2 text-lg"
+            style={{ 
+              fontFamily: 'Open Sans, sans-serif',
+              color: 'var(--text-secondary)'
+            }}
+          >
+            Update your event details
+          </p>
+        </header>
 
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                Event Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-              />
-            </div>
+        <main className="max-w-4xl mx-auto px-6 pb-12">
+          <div 
+            className="rounded-2xl shadow-lg p-8"
+            style={{ backgroundColor: 'var(--card-bg)' }}
+          >
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div 
+                  className="rounded-lg p-4"
+                  style={{ 
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)'
+                  }}
+                >
+                  <p 
+                    className="text-sm"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      color: '#DC2626'
+                    }}
+                  >
+                    {error}
+                  </p>
+                </div>
+              )}
 
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description *
-              </label>
-              <textarea
-                id="description"
-                required
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-                  Date *
+                <label 
+                  className="block text-sm font-semibold mb-3"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  Event Image
+                </label>
+                
+                {!imagePreview && !currentImageUrl ? (
+                  <div
+                    {...getRootProps()}
+                    className="border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all hover:border-indigo-500"
+                    style={{ 
+                      borderColor: isDragActive ? '#4F46E5' : 'var(--border-color)',
+                      backgroundColor: isDragActive ? 'rgba(79, 70, 229, 0.05)' : 'transparent'
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="flex flex-col items-center">
+                      <span className="material-symbols-outlined text-6xl mb-4" style={{ color: 'var(--text-secondary)' }}>
+                        cloud_upload
+                      </span>
+                      <p 
+                        className="text-lg font-semibold mb-2"
+                        style={{ 
+                          fontFamily: 'Open Sans, sans-serif',
+                          color: 'var(--text-primary)'
+                        }}
+                      >
+                        {isDragActive ? 'Drop image here' : 'Drag & drop a new image'}
+                      </p>
+                      <p 
+                        className="text-sm"
+                        style={{ 
+                          fontFamily: 'Open Sans, sans-serif',
+                          color: 'var(--text-secondary)'
+                        }}
+                      >
+                        or click to browse • PNG, JPG, GIF up to 5MB
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative rounded-xl overflow-hidden">
+                    <img 
+                      src={imagePreview || currentImageUrl || ''} 
+                      alt="Preview" 
+                      className="w-full h-64 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-xl">close</span>
+                    </button>
+                    {!imagePreview && currentImageUrl && (
+                      <div
+                      {...getRootProps()}
+                        className="absolute bottom-4 left-4 right-4 rounded-lg p-3 cursor-pointer transition-colors"
+                        style={{
+                        backgroundColor: 'var(--card-bg)',
+                        opacity: 0.95
+                      }}
+                        >
+                         <input {...getInputProps()} />
+                         <p 
+                           className="text-sm font-semibold text-center"
+                           style={{ 
+                           fontFamily: 'Open Sans, sans-serif',
+                           color: 'var(--text-primary)'
+                      }}
+                        >
+                        Click to replace image
+                      </p>
+                    </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label 
+                  htmlFor="title" 
+                  className="block text-sm font-semibold mb-2"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  Event Title *
                 </label>
                 <input
-                  type="date"
-                  id="date"
+                  type="text"
+                  id="title"
                   required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    backgroundColor: 'var(--card-bg)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)'
+                  }}
                 />
               </div>
 
               <div>
-                <label htmlFor="time" className="block text-sm font-medium text-gray-700">
-                  Time
+                <label 
+                  htmlFor="description" 
+                  className="block text-sm font-semibold mb-2"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  Description *
                 </label>
-                <input
-                  type="time"
-                  id="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+                <textarea
+                  id="description"
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    backgroundColor: 'var(--card-bg)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)'
+                  }}
                 />
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                Location *
-              </label>
-              <input
-                type="text"
-                id="location"
-                required
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label 
+                    htmlFor="date" 
+                    className="block text-sm font-semibold mb-2"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      color: 'var(--text-primary)'
+                    }}
+                  >
+                    Date *
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    required
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border-color)'
+                    }}
+                  />
+                </div>
 
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                Category *
-              </label>
-              <select
-                id="category"
-                required
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-              >
-                {categories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div>
+                  <label 
+                    htmlFor="time" 
+                    className="block text-sm font-semibold mb-2"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      color: 'var(--text-primary)'
+                    }}
+                  >
+                    Time (Optional)
+                  </label>
+                  <input
+                    type="time"
+                    id="time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border-color)'
+                    }}
+                  />
+                </div>
+              </div>
 
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {loading ? 'Updating...' : 'Update Event'}
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push(`/events/${params.id}`)}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </main>
-    </div>
+              <div>
+                <label 
+                  htmlFor="location" 
+                  className="block text-sm font-semibold mb-2"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  Location *
+                </label>
+                <input
+                  type="text"
+                  id="location"
+                  required
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    backgroundColor: 'var(--card-bg)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label 
+                  htmlFor="category" 
+                  className="block text-sm font-semibold mb-2"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  Category *
+                </label>
+                <select
+                  id="category"
+                  required
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    backgroundColor: 'var(--card-bg)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)'
+                  }}
+                >
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="submit"
+                  disabled={loading || uploading}
+                  className="flex-1 py-3 px-6 rounded-xl font-semibold transition-colors disabled:opacity-50"
+                  style={{
+                    fontFamily: 'Open Sans, sans-serif',
+                    backgroundColor: '#4F46E5',
+                    color: '#FFFFFF'
+                  }}
+                >
+                  {uploading ? 'Uploading Image...' : loading ? 'Updating...' : 'Update Event'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/events/${params.id}`)}
+                  className="px-6 py-3 rounded-xl font-semibold transition-colors"
+                  style={{
+                    fontFamily: 'Open Sans, sans-serif',
+                    backgroundColor: 'transparent',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)'
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }

@@ -8,6 +8,7 @@
   --border-color: #E5E7EB;
   --text-primary: #000000;
   --text-secondary: #4B5563;
+  --icon-filter: invert(0);
 }
 
 .dark {
@@ -18,6 +19,7 @@
   --border-color: #374151;
   --text-primary: #FFFFFF;
   --text-secondary: #D1D5DB;
+  --icon-filter: invert(1);
 }
 
 @theme inline {
@@ -66,4 +68,11 @@ textarea::placeholder {
 .dark input::placeholder,
 .dark textarea::placeholder {
   color: #6b7280 !important;
+}
+
+/* Fix date and time input icons in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: var(--icon-filter);
+  cursor: pointer;
 }

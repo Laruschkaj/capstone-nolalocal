@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const event = await Event.create({
       title,
       description,
-      date: new Date(date),
+      date: new Date(date + 'T00:00:00'),
       time,
       location,
       category,
