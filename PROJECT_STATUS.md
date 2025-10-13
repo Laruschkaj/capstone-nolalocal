@@ -1,25 +1,86 @@
 # NolaLocal - Project Status
 
-## ✅ PHASE 7A COMPLETE
+# COMPLETED (Phase 8.1 & 8.2):
 
-### Current State:
+# Dark/Light Mode Theme System
 
-- **Branch:** dev
-- **Admin User:** laruschkajoubert@gmail.com (isAdmin: true)
-- **Events Syncing:** 66+ from Ticketmaster API
-- **Status:** Fully functional event platform with weather widget
+- ThemeContext with localStorage
+- ThemeToggle with Material Icons
+- CSS custom properties (--text-primary, --card-bg, --nav-bg, etc.)
+- All pages support dark mode
 
-### Completed Features:
+# Navigation
 
-- Authentication system (JWT, email verification)
-- Event CRUD operations
-- Ticketmaster API integration (Music, Sports, Theater, Comedy, etc.)
-- 17 event categories
-- Weather widget (live New Orleans weather in nav)
-- Event images with category fallbacks
-- Admin system ready
-- User Dashboard ready (View created events + liked events with category filter)
-- Like/Heart system (database + API + UI)
+- Proper colors in both modes
+- Weather widget dark mode support
+- Cursor pointers on all clickable items
+
+# Landing Page
+
+- Featured Events title dark mode
+- Large, bold chevron arrows (64px, filled, weight 700)
+- 10 featured events
+
+# Profile/Dashboard
+
+- Dark mode backgrounds and text
+- Filter buttons with proper active states
+- Account settings section
+
+# Calendar Page
+
+- Full dark mode support
+- Event cards matching grid view style
+- Heart/like functionality
+- Category filter at bottom
+- Perfect header alignment
+- User + external events displaying
+
+# STILL TODO (Remaining Phase 8 Tasks):
+
+# Admin Dashboard - Dark mode fixes
+
+- Titles white in dark mode
+- Stats cards dark gray background
+- Tables dark with white text
+
+# Create Event Form - Modern redesign
+
+- Drag-and-drop image upload (Cloudinary)
+- Event vs Guide toggle
+- Dark mode support
+- Beautiful modern styling
+
+# Event Detail Pages - Dark mode
+
+- Background and card colors
+- Text colors
+
+# Login/Signup Pages - Dark mode
+
+- Forms and backgrounds
+
+# Auto Theme Based on Time - Bonus feature
+
+- Detect user timezone
+- Set theme automatically (light during day, dark at night)
+- Events Page - Quick check for dark mode
+
+# New Files Created:
+
+- src/contexts/ThemeContext.tsx
+- src/components/ui/ThemeToggle.tsx
+- src/components/events/CalendarEventCard.tsx
+
+# Modified Files:
+
+- src/app/layout.tsx
+- src/app/globals.css
+- src/components/layout/Navigation.tsx
+- src/components/weather/WeatherWidget.tsx
+- src/app/page.tsx
+- src/app/profile/page.tsx
+- src/app/calendar/page.tsx
 
 ### Tech Stack:
 
@@ -39,16 +100,6 @@ https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064911/hero-3_atdpa0.jpg
 https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064911/hero-4_gtgzat.jpg
 https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064912/hero-5_jp7le2.jpg
 https://res.cloudinary.com/dbmkqehtm/image/upload/v1760064912/hero-6_vdi6zi.jpg
-
-### Next Phase (8):
-
-1. Cloudinary images upload for user events
-2. Update Create New Event input form to include images (not required) and store in /cloudinary.
-3. Admin Dashboard
-4. Calendar view enchancements
-5. Dark/Light mode toggle
-6. Landing page refinements
-7. Featured events carousel with arrows
 
 ### Design Inspiration:
 

@@ -1,13 +1,11 @@
-///src/app/calendar/page.tsx
 'use client';
 
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import Navigation from '@/components/layout/Navigation';
+import CalendarEventCard from '@/components/events/CalendarEventCard';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import WeatherWidget from '@/components/weather/WeatherWidget';
 
 interface Event {
   _id: string;
@@ -22,6 +20,8 @@ interface Event {
     name: string;
     color: string;
   };
+  likes?: string[];
+  likesCount?: number;
 }
 
 interface Category {
@@ -70,16 +70,23 @@ export default function CalendarPage() {
       const month = currentDate.getMonth() + 1;
       const year = currentDate.getFullYear();
       
-      let url = `/api/events?month=${month}&year=${year}`;
+      // Fetch ALL events, not just by month
+      let url = `/api/events`;
       if (selectedCategory !== 'all') {
-        url += `&category=${selectedCategory}`;
+        url += `?category=${selectedCategory}`;
       }
 
       const response = await fetch(url);
       const data = await response.json();
       
       if (data.success) {
-        setEvents(data.data.events);
+        // Filter events for current month on client side
+        const monthEvents = data.data.events.filter((event: Event) => {
+          const eventDate = new Date(event.date);
+          return eventDate.getMonth() === currentDate.getMonth() && 
+                 eventDate.getFullYear() === currentDate.getFullYear();
+        });
+        setEvents(monthEvents);
       }
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -122,23 +129,6 @@ export default function CalendarPage() {
     });
   };
 
-  // Get events grouped by date
-  const getGroupedEvents = () => {
-    const grouped: { [key: string]: Event[] } = {};
-    
-    events.forEach(event => {
-      const dateKey = new Date(event.date).toDateString();
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
-      }
-      grouped[dateKey].push(event);
-    });
-    
-    return Object.entries(grouped).sort((a, b) => 
-      new Date(a[0]).getTime() - new Date(b[0]).getTime()
-    );
-  };
-
   // Get events for selected date
   const selectedDateEvents = getEventsForDate(selectedDate);
 
@@ -159,11 +149,6 @@ export default function CalendarPage() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
-
   const isPastDate = (date: Date | null) => {
     if (!date) return false;
     const today = new Date();
@@ -177,181 +162,207 @@ export default function CalendarPage() {
 
   return (
     <ProtectedRoute>
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Navigation */}
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <Navigation />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left: Calendar Grid */}
-          <div className="lg:col-span-5">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-              {/* Month Header */}
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
-                  {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                </h2>
-                <div className="flex gap-2">
-                  <button
-                    onClick={goToPreviousMonth}
-                    disabled={!canGoPrevious}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      canGoPrevious 
-                        ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' 
-                        : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                    }`}
-                  >
-                    ←
-                  </button>
-                  <button
-                    onClick={goToNextMonth}
-                    className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-colors"
-                  >
-                    →
-                  </button>
-                </div>
-              </div>
-
-              {/* Day Headers */}
-              <div className="grid grid-cols-7 gap-2 mb-4">
-                {DAYS.map(day => (
-                  <div key={day} className="text-center text-sm font-semibold text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              {/* Calendar Days */}
-              <div className="grid grid-cols-7 gap-2">
-                {calendarDays.map((day, index) => {
-                  const dayEvents = getEventsForDate(day);
-                  const isSelected = day && selectedDate.toDateString() === day.toDateString();
-                  const isToday = day && day.toDateString() === new Date().toDateString();
-                  const isPast = isPastDate(day);
-
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => day && !isPast && setSelectedDate(day)}
-                      disabled={!day || isPast}
-                      className={`
-                        aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-all relative
-                        ${!day ? 'invisible' : ''}
-                        ${isPast ? 'text-gray-300 cursor-not-allowed' : ''}
-                        ${isSelected && !isPast ? 'bg-gray-900 text-white font-bold' : ''}
-                        ${isToday && !isSelected && !isPast ? 'border-2 border-gray-900 font-bold' : ''}
-                        ${!isSelected && !isToday && !isPast ? 'hover:bg-gray-100' : ''}
-                      `}
-                      style={{ fontFamily: 'Open Sans, sans-serif' }}
-                    >
-                      {day && (
-                        <>
-                          <span>{day.getDate()}</span>
-                          {dayEvents.length > 0 && (
-                            <div className="flex gap-1 mt-1">
-                              {dayEvents.slice(0, 3).map((event, i) => (
-                                <div
-                                  key={i}
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{ backgroundColor: event.category.color }}
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Event List */}
-          <div className="lg:col-span-7">
-            {/* Category Filter */}
-            <div className="mb-6 flex justify-end">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left: Calendar Grid */}
+            <div className="lg:col-span-5">
+              <div 
+                className="rounded-2xl shadow-lg p-6 sticky top-24"
+                style={{ backgroundColor: 'var(--card-bg)' }}
               >
-                <option value="all">All Categories</option>
-                {Array.isArray(categories) && categories.map(cat => (
-                  <option key={cat._id} value={cat._id}>{cat.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Selected Date Header */}
-            <div className="mb-6">
-              <h3 className="text-4xl font-bold text-gray-900" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
-                {selectedDate.toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  month: 'long', 
-                  day: 'numeric',
-                  year: 'numeric'
-                }).toUpperCase()}
-              </h3>
-            </div>
-
-            {/* Event Cards */}
-            <div className="space-y-4">
-              {loading ? (
-                <p className="text-gray-500 text-center py-12">Loading events...</p>
-              ) : selectedDateEvents.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">No events on this date</p>
-                </div>
-              ) : (
-                selectedDateEvents.map((event) => (
-                  <motion.div
-                    key={event._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onClick={() => router.push(`/events/${event._id}`)}
-                    className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all cursor-pointer"
+                {/* Month Header - Exact same height as right side date header */}
+                <div className="flex items-center justify-between h-[48px] mb-6">
+                  <h2 
+                    className="text-4xl font-bold leading-none"
+                    style={{ 
+                      fontFamily: 'Bebas Neue, sans-serif',
+                      color: 'var(--text-primary)'
+                    }}
                   >
-                    <div className="flex items-start gap-4">
-                      <div 
-                        className="w-2 h-full rounded-full flex-shrink-0"
-                        style={{ backgroundColor: event.category.color }}
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
-                          {event.title}
-                        </h4>
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                          {event.description}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                          {event.time && <span>🕐 {event.time}</span>}
-                          <span>📍 {event.location}</span>
-                        </div>
-                        <div className="mt-3">
-                          <span 
-                            className="inline-block px-3 py-1 rounded-full text-xs font-semibold"
-                            style={{ 
-                              backgroundColor: event.category.color + '20',
-                              color: event.category.color,
-                              fontFamily: 'Open Sans, sans-serif'
-                            }}
-                          >
-                            {event.category.name}
-                          </span>
-                        </div>
-                      </div>
+                    {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase()}
+                  </h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={goToPreviousMonth}
+                      disabled={!canGoPrevious}
+                      className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                      style={{
+                        backgroundColor: canGoPrevious ? 'rgba(128, 128, 128, 0.1)' : 'rgba(128, 128, 128, 0.05)',
+                        color: canGoPrevious ? 'var(--text-primary)' : 'var(--text-secondary)',
+                        cursor: canGoPrevious ? 'pointer' : 'not-allowed',
+                        opacity: canGoPrevious ? 1 : 0.3
+                      }}
+                    >
+                      ←
+                    </button>
+                    <button
+                      onClick={goToNextMonth}
+                      className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                      style={{
+                        backgroundColor: 'rgba(128, 128, 128, 0.1)',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      →
+                    </button>
+                  </div>
+                </div>
+
+                {/* Day Headers */}
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {DAYS.map(day => (
+                    <div 
+                      key={day} 
+                      className="text-center text-sm font-semibold"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
+                      {day}
                     </div>
-                  </motion.div>
-                ))
-              )}
+                  ))}
+                </div>
+
+                {/* Calendar Days */}
+                <div className="grid grid-cols-7 gap-2 mb-6">
+                  {calendarDays.map((day, index) => {
+                    const dayEvents = getEventsForDate(day);
+                    const isSelected = day && selectedDate.toDateString() === day.toDateString();
+                    const isToday = day && day.toDateString() === new Date().toDateString();
+                    const isPast = isPastDate(day);
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => day && !isPast && setSelectedDate(day)}
+                        disabled={!day || isPast}
+                        className="aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-all relative"
+                        style={{ 
+                          fontFamily: 'Open Sans, sans-serif',
+                          backgroundColor: isSelected && !isPast ? '#1F2937' : 'transparent',
+                          color: isSelected && !isPast ? '#FFFFFF' : isPast ? 'rgba(128, 128, 128, 0.3)' : 'var(--text-primary)',
+                          border: isToday && !isSelected && !isPast ? '2px solid var(--text-primary)' : 'none',
+                          fontWeight: isSelected || isToday ? 'bold' : 'normal',
+                          cursor: !day || isPast ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {day && (
+                          <>
+                            <span>{day.getDate()}</span>
+                            {dayEvents.length > 0 && !isPast && (
+                              <div className="flex gap-1 mt-1">
+                                {dayEvents.slice(0, 3).map((event, i) => (
+                                  <div
+                                    key={i}
+                                    className="w-1.5 h-1.5 rounded-full"
+                                    style={{ backgroundColor: event.category.color }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Category Filter - Confined dropdown with scroll */}
+                <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <label 
+                    className="block text-xs font-semibold mb-2"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      color: 'var(--text-secondary)'
+                    }}
+                  >
+                    FILTER BY CATEGORY
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      maxHeight: '200px',
+                      overflowY: 'auto'
+                    }}
+                    size={1}
+                  >
+                    <option value="all">All Categories</option>
+                    {Array.isArray(categories) && categories.map(cat => (
+                      <option key={cat._id} value={cat._id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Event List */}
+            <div className="lg:col-span-7">
+              {/* Selected Date Header - Exact same height as calendar month */}
+              <div className="h-[48px] mb-6 flex items-center">
+                <h3 
+                  className="text-4xl font-bold leading-none"
+                  style={{ 
+                    fontFamily: 'Bebas Neue, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  {selectedDate.toLocaleDateString('en-US', { 
+                    weekday: 'long',
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  }).toUpperCase()}
+                </h3>
+              </div>
+
+              {/* Event Cards Grid - Scrollable */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {loading ? (
+                  <p 
+                    className="text-center py-12 col-span-2"
+                    style={{ 
+                      fontFamily: 'Open Sans, sans-serif',
+                      color: 'var(--text-secondary)'
+                    }}
+                  >
+                    Loading events...
+                  </p>
+                ) : selectedDateEvents.length === 0 ? (
+                  <div className="text-center py-12 col-span-2">
+                    <p 
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
+                      No events on this date
+                    </p>
+                  </div>
+                ) : (
+                  selectedDateEvents.map((event) => (
+                    <CalendarEventCard 
+                      key={event._id} 
+                      event={event}
+                      onLikeUpdate={fetchEvents}
+                    />
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </ProtectedRoute>
   );
 }

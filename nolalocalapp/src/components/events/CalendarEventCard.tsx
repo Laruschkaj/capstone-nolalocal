@@ -1,4 +1,3 @@
-//EventCard
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEventCardColor, getTextColor } from '@/lib/data/colorPalette';
 
-interface EventCardProps {
+interface CalendarEventCardProps {
   event: {
     _id: string;
     title: string;
@@ -17,21 +16,17 @@ interface EventCardProps {
     location: string;
     imageUrl?: string;
     category: {
+      _id: string;
       name: string;
       color: string;
     };
-    creator?: {
-      username: string;
-    };
-    source?: string;
     likes?: string[];
     likesCount?: number;
   };
-  index?: number;
   onLikeUpdate?: () => void;
 }
 
-export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardProps) {
+export default function CalendarEventCard({ event, onLikeUpdate }: CalendarEventCardProps) {
   const router = useRouter();
   const { user, token } = useAuth();
   const bgColor = getEventCardColor(event._id);
@@ -42,7 +37,7 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
   const [liking, setLiking] = useState(false);
 
   const handleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
     
     if (!user) {
       router.push('/login');
@@ -78,14 +73,13 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
       onClick={() => router.push(`/events/${event._id}`)}
       className="rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer transform hover:scale-[1.02] p-4 relative"
-      style={{ backgroundColor: bgColor }}
+      style={{ backgroundColor: bgColor, minHeight: '280px' }}
     >
       {/* Event Image */}
       {event.imageUrl && (
-        <div className="relative h-56 w-full overflow-hidden rounded-2xl mb-4">
+        <div className="relative h-40 w-full overflow-hidden rounded-2xl mb-4">
           <img
             src={event.imageUrl}
             alt={event.title}
@@ -96,7 +90,7 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
 
       {/* Title */}
       <h3 
-        className="text-3xl font-bold mb-16 leading-tight"
+        className="text-2xl font-bold mb-16 leading-tight line-clamp-3"
         style={{ 
           color: textColor,
           fontFamily: 'Bebas Neue, sans-serif',
@@ -110,7 +104,7 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
       <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
         {/* Category Badge - Bottom Left */}
         <span 
-          className="inline-block px-4 py-2 rounded-full text-sm font-semibold"
+          className="inline-block px-3 py-1 rounded-full text-xs font-semibold"
           style={{ 
             backgroundColor: 'rgba(255, 255, 255, 0.25)',
             color: textColor,
@@ -127,7 +121,7 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
           disabled={liking}
         >
           <span 
-            className="material-symbols-outlined text-3xl"
+            className="material-symbols-outlined text-2xl"
             style={{ 
               color: 'white',
               fontVariationSettings: liked ? "'FILL' 1" : "'FILL' 0"

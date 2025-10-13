@@ -139,19 +139,28 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#F5F5F5]">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <Navigation />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
             <h1 
-              className="text-5xl font-bold text-gray-900 mb-2"
-              style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+              className="text-5xl font-bold mb-2"
+              style={{ 
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: 'var(--text-primary)'
+              }}
             >
               MY DASHBOARD
             </h1>
-            <p className="text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <p 
+              className="text-lg"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                color: 'var(--text-secondary)'
+              }}
+            >
               Welcome back, {user?.username}!
             </p>
           </div>
@@ -162,34 +171,37 @@ export default function ProfilePage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                  filter === 'all' 
-                    ? 'bg-gray-900 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+                className="px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: filter === 'all' ? '#1F2937' : 'var(--card-bg)',
+                  color: filter === 'all' ? '#FFFFFF' : 'var(--text-primary)',
+                  border: filter === 'all' ? 'none' : '1px solid var(--border-color)'
+                }}
               >
                 ALL EVENTS
               </button>
               <button
                 onClick={() => setFilter('created')}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                  filter === 'created' 
-                    ? 'bg-gray-900 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+                className="px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: filter === 'created' ? '#1F2937' : 'var(--card-bg)',
+                  color: filter === 'created' ? '#FFFFFF' : 'var(--text-primary)',
+                  border: filter === 'created' ? 'none' : '1px solid var(--border-color)'
+                }}
               >
                 MY EVENTS
               </button>
               <button
                 onClick={() => setFilter('liked')}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                  filter === 'liked' 
-                    ? 'bg-gray-900 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+                className="px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: filter === 'liked' ? '#1F2937' : 'var(--card-bg)',
+                  color: filter === 'liked' ? '#FFFFFF' : 'var(--text-primary)',
+                  border: filter === 'liked' ? 'none' : '1px solid var(--border-color)'
+                }}
               >
                 LIKED EVENTS
               </button>
@@ -199,8 +211,13 @@ export default function ProfilePage() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+              className="px-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                backgroundColor: 'var(--card-bg)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-color)'
+              }}
             >
               <option value="all">All Categories</option>
               {categories.map(cat => (
@@ -220,10 +237,24 @@ export default function ProfilePage() {
 
           {/* Events Grid */}
           {loading ? (
-            <p className="text-center text-gray-600">Loading events...</p>
+            <p 
+              className="text-center"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              Loading events...
+            </p>
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p 
+                className="text-lg"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  color: 'var(--text-secondary)'
+                }}
+              >
                 {filter === 'created' && 'No events created yet'}
                 {filter === 'liked' && 'No liked events yet'}
                 {filter === 'all' && 'No events found'}
@@ -243,17 +274,20 @@ export default function ProfilePage() {
           )}
 
           {/* Account Actions */}
-          <div className="mt-12 pt-8 border-t border-gray-300">
+          <div className="mt-12 pt-8" style={{ borderTop: '1px solid var(--border-color)' }}>
             <h2 
-              className="text-2xl font-bold text-gray-900 mb-4"
-              style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+              className="text-2xl font-bold mb-4"
+              style={{ 
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: 'var(--text-primary)'
+              }}
             >
               ACCOUNT SETTINGS
             </h2>
             <div className="flex gap-4">
               <button
                 onClick={handleLogout}
-                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
                 style={{ fontFamily: 'Open Sans, sans-serif' }}
               >
                 Logout
