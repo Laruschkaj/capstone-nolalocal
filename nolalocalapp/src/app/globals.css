@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F5F5F5;
+  --foreground: #000000;
+  --card-bg: #FFFFFF;
+  --nav-bg: rgba(245, 245, 245, 0.8);
+  --border-color: #E5E7EB;
+  --text-primary: #000000;
+  --text-secondary: #4B5563;
+  --icon-filter: invert(0);
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --card-bg: #1a1a1a;
+  --nav-bg: rgba(0, 0, 0, 0.8);
+  --border-color: #374151;
+  --text-primary: #FFFFFF;
+  --text-secondary: #D1D5DB;
+  --icon-filter: invert(1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-bebas: var(--font-bebas);
+  --font-sans: var(--font-open-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-open-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom form input styles */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+  color: #111827 !important;
+  background-color: #FFFFFF !important;
+}
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="date"],
+.dark input[type="time"],
+.dark textarea,
+.dark select {
+  color: #FFFFFF !important;
+  background-color: #1a1a1a !important;
+  border-color: #374151 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Fix date and time input icons in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: var(--icon-filter);
+  cursor: pointer;
+}
