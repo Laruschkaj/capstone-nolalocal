@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 import { successResponse, errorResponse } from '@/lib/helpers/apiResponse';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,15 @@ export async function POST(request: NextRequest) {
     user.verifyTokenExpiry = undefined;
     await user.save();
 
+    // Send welcome email AFTER successful verification
+    try {
+      await sendWelcomeEmail(user.email, user.username);
+      console.log('✅ Welcome email sent after verification');
+    } catch (error) {
+      console.error('❌ Welcome email failed:', error);
+      // Don't fail verification if welcome email fails
+    }
+
     return successResponse(
       {
         user: {
@@ -39,7 +49,7 @@ export async function POST(request: NextRequest) {
           isVerified: user.isVerified,
         },
       },
-      'Email verified successfully'
+      'Email verified successfully! Welcome to NolaLocal!'
     );
   } catch (error: any) {
     console.error('Verification error:', error);

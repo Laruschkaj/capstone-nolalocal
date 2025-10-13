@@ -20,7 +20,7 @@
     "mongoose": "^8.19.1",
     "next": "15.5.4",
     "next-cloudinary": "^6.16.0",
-    "nodemailer": "^7.0.7",
+    "nodemailer": "^7.0.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-dropzone": "^14.3.8",

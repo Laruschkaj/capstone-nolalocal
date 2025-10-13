@@ -4,6 +4,7 @@ import User from '@/models/User';
 import { signToken } from '@/lib/helpers/jwt';
 import { generateVerificationToken, generateTokenExpiry } from '@/lib/helpers/tokens';
 import { successResponse, errorResponse } from '@/lib/helpers/apiResponse';
+import { sendWelcomeEmail, sendVerifyEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,25 +53,28 @@ export async function POST(request: NextRequest) {
       email: user.email,
     });
 
-    // TODO: Send verification email (we'll implement this later)
-    // For now, we'll just return the verification token in development
-    console.log('Verification token:', verifyToken);
+    /// Send verification email only
+    try {
+     await sendVerifyEmail(user.email, user.username, verifyToken);
+     console.log('✅ Verification email sent');
+    } catch (error) {
+     console.error('❌ Email error:', error);
+    }
 
     return successResponse(
-      {
-        token,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          isVerified: user.isVerified,
-        },
-        // In development, return verify token (remove in production)
-        ...(process.env.NODE_ENV === 'development' && { verifyToken }),
-      },
-      'User registered successfully. Please verify your email.',
-      201
-    );
+  {
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      isVerified: user.isVerified,
+    },
+    message: 'Account created! Please check your email to verify your account.',
+    // Don't send token until verified
+  },
+  'User registered successfully. Please verify your email.',
+  201
+  );
   } catch (error: any) {
     console.error('Signup error:', error);
     return errorResponse('Server error during signup', 500);

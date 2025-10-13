@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function SignupForm() {
@@ -11,7 +10,6 @@ export default function SignupForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,13 +32,13 @@ export default function SignupForm() {
         return;
       }
 
-      login(data.data.token, data.data.user);
+      // Don't auto-login - show success message instead
       setSuccess(true);
       
-      // Redirect after 2 seconds
+      // Redirect to landing page after 3 seconds
       setTimeout(() => {
-        router.push('/events');
-      }, 2000);
+        router.push('/');
+      }, 3000);
     } catch (err) {
       setError('An error occurred. Please try again.');
       setLoading(false);
@@ -49,34 +47,128 @@ export default function SignupForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full bg-green-50 p-6 rounded-lg">
-          <h3 className="text-lg font-medium text-green-900">Account created!</h3>
-          <p className="mt-2 text-sm text-green-700">
-            Redirecting you to events...
-          </p>
+      <div 
+        className="min-h-screen flex items-center justify-center py-12 px-4"
+        style={{ backgroundColor: 'var(--background)' }}
+      >
+        <div 
+          className="max-w-md w-full p-8 rounded-2xl shadow-lg"
+          style={{ backgroundColor: 'var(--card-bg)' }}
+        >
+          <div className="text-center">
+            <span 
+              className="material-symbols-outlined text-6xl mb-4"
+              style={{ color: '#10B981' }}
+            >
+              mark_email_read
+            </span>
+            <h3 
+              className="text-2xl font-bold mb-4"
+              style={{ 
+                fontFamily: 'Bebas Neue, sans-serif',
+                color: 'var(--text-primary)'
+              }}
+            >
+              CHECK YOUR EMAIL! 📧
+            </h3>
+            <p 
+              className="text-lg mb-2"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              We sent a verification link to:
+            </p>
+            <p 
+              className="font-semibold mb-4"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                color: 'var(--text-primary)'
+              }}
+            >
+              {email}
+            </p>
+            <p 
+              className="text-sm"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              Click the link in the email to verify your account and get started!
+            </p>
+            <p 
+              className="text-xs mt-4"
+              style={{ 
+                fontFamily: 'Open Sans, sans-serif',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              Redirecting to home page...
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div 
+      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      style={{ backgroundColor: 'var(--background)' }}
+    >
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your NolaLocal account
+          <h2 
+            className="mt-6 text-center text-4xl font-bold"
+            style={{ 
+              fontFamily: 'Bebas Neue, sans-serif',
+              color: 'var(--text-primary)'
+            }}
+          >
+            CREATE YOUR ACCOUNT
           </h2>
+          <p 
+            className="mt-2 text-center text-sm"
+            style={{ 
+              fontFamily: 'Open Sans, sans-serif',
+              color: 'var(--text-secondary)'
+            }}
+          >
+            Join the NolaLocal community
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div 
+              className="rounded-lg p-4"
+              style={{ 
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)'
+              }}
+            >
+              <p 
+                className="text-sm"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  color: '#DC2626'
+                }}
+              >
+                {error}
+              </p>
             </div>
           )}
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="sr-only">
+              <label 
+                htmlFor="username" 
+                className="block text-sm font-semibold mb-2"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  color: 'var(--text-primary)'
+                }}
+              >
                 Username
               </label>
               <input
@@ -86,12 +178,25 @@ export default function SignupForm() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
+                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)'
+                }}
+                placeholder="Choose a username"
               />
             </div>
             <div>
-              <label htmlFor="email" className="sr-only">
+              <label 
+                htmlFor="email" 
+                className="block text-sm font-semibold mb-2"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  color: 'var(--text-primary)'
+                }}
+              >
                 Email address
               </label>
               <input
@@ -102,12 +207,25 @@ export default function SignupForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)'
+                }}
+                placeholder="you@example.com"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label 
+                htmlFor="password" 
+                className="block text-sm font-semibold mb-2"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  color: 'var(--text-primary)'
+                }}
+              >
                 Password
               </label>
               <input
@@ -118,8 +236,14 @@ export default function SignupForm() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password (min 8 characters)"
+                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)'
+                }}
+                placeholder="Min 8 characters"
               />
             </div>
           </div>
@@ -128,14 +252,26 @@ export default function SignupForm() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full py-3 px-6 rounded-xl font-semibold transition-colors disabled:opacity-50"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                backgroundColor: '#4F46E5',
+                color: '#FFFFFF'
+              }}
             >
               {loading ? 'Creating account...' : 'Sign up'}
             </button>
           </div>
 
           <div className="text-center">
-            <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <a 
+              href="/login" 
+              className="font-medium"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                color: '#4F46E5'
+              }}
+            >
               Already have an account? Sign in
             </a>
           </div>
