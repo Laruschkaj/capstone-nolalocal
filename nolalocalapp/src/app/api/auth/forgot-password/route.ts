@@ -4,8 +4,19 @@ import User from '@/models/User';
 import { generateVerificationToken, generateTokenExpiry } from '@/lib/helpers/tokens';
 import { successResponse, errorResponse } from '@/lib/helpers/apiResponse';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { rateLimit } from '@/middleware/rateLimiter';
+
+// Rate limiter: 3 password reset requests per hour per IP
+const resetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  maxRequests: 3,
+});
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await resetLimiter(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     await dbConnect();
 
@@ -16,7 +27,6 @@ export async function POST(request: NextRequest) {
       return errorResponse('Email is required');
     }
 
-    // Find user by email
     const user = await User.findOne({ email });
 
     // Always return success to prevent email enumeration
@@ -27,25 +37,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate reset token
     const resetToken = generateVerificationToken();
     const resetTokenExpiry = generateTokenExpiry(1); // 1 hour
 
-    console.log('Generated reset token:', resetToken);
-    console.log('Token expiry:', resetTokenExpiry);
-
-    // Save token to user
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpiry = resetTokenExpiry;
     await user.save();
 
-    console.log('✅ Token saved to user:', user.email);
-
-    // Verify it was saved
-    const verifyUser = await User.findById(user._id);
-    console.log('Verification - Token in DB:', verifyUser?.resetPasswordToken);
-
-    // Send password reset email
     try {
       await sendPasswordResetEmail(user.email, user.username, resetToken);
       console.log('✅ Password reset email sent');
