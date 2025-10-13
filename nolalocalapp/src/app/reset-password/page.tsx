@@ -1,27 +1,45 @@
 'use client';
 
-import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginForm() {
-  const [email, setEmail] = useState('');
+function ResetPasswordContent() {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+
+  useEffect(() => {
+    if (!token) {
+      setError('Invalid reset link');
+    }
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ token, password }),
       });
 
       const data = await response.json();
@@ -32,13 +50,48 @@ export default function LoginForm() {
         return;
       }
 
-      login(data.data.token, data.data.user);
-      router.push('/events');
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
     } catch (err) {
       setError('An error occurred. Please try again.');
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center py-12 px-4"
+        style={{ backgroundColor: 'var(--background)' }}
+      >
+        <div 
+          className="max-w-md w-full p-8 rounded-2xl shadow-lg text-center"
+          style={{ backgroundColor: 'var(--card-bg)' }}
+        >
+          <span className="text-6xl mb-4 block">✅</span>
+          <h3 
+            className="text-2xl font-bold mb-4"
+            style={{ 
+              fontFamily: 'Bebas Neue, sans-serif',
+              color: 'var(--text-primary)'
+            }}
+          >
+            PASSWORD RESET!
+          </h3>
+          <p 
+            style={{ 
+              fontFamily: 'Open Sans, sans-serif',
+              color: 'var(--text-secondary)'
+            }}
+          >
+            Redirecting you to login...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -54,16 +107,16 @@ export default function LoginForm() {
               color: 'var(--text-primary)'
             }}
           >
-            SIGN IN TO NOLALOCAL
+            RESET YOUR PASSWORD
           </h2>
           <p 
-            className="mt-2 text-center text-sm"
+            className="mt-2 text-center"
             style={{ 
               fontFamily: 'Open Sans, sans-serif',
               color: 'var(--text-secondary)'
             }}
           >
-            Welcome back to the community
+            Enter your new password below
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -86,36 +139,8 @@ export default function LoginForm() {
               </p>
             </div>
           )}
+
           <div className="space-y-4">
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-semibold mb-2"
-                style={{ 
-                  fontFamily: 'Open Sans, sans-serif',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{ 
-                  fontFamily: 'Open Sans, sans-serif',
-                  backgroundColor: 'var(--card-bg)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)'
-                }}
-                placeholder="you@example.com"
-              />
-            </div>
             <div>
               <label 
                 htmlFor="password" 
@@ -125,13 +150,12 @@ export default function LoginForm() {
                   color: 'var(--text-primary)'
                 }}
               >
-                Password
+                New Password
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -142,7 +166,35 @@ export default function LoginForm() {
                   color: 'var(--text-primary)',
                   border: '1px solid var(--border-color)'
                 }}
-                placeholder="Enter your password"
+                placeholder="Min 8 characters"
+              />
+            </div>
+            <div>
+              <label 
+                htmlFor="confirmPassword" 
+                className="block text-sm font-semibold mb-2"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{ 
+                  fontFamily: 'Open Sans, sans-serif',
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)'
+                }}
+                placeholder="Confirm your password"
               />
             </div>
           </div>
@@ -150,7 +202,7 @@ export default function LoginForm() {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !token}
               className="w-full py-3 px-6 rounded-xl font-semibold transition-colors disabled:opacity-50"
               style={{
                 fontFamily: 'Open Sans, sans-serif',
@@ -158,34 +210,23 @@ export default function LoginForm() {
                 color: '#FFFFFF'
               }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Resetting...' : 'Reset Password'}
             </button>
-          </div>
-
-          <div className="text-center space-y-2">
-            <a 
-              href="/forgot-password" 
-              className="block font-medium text-sm"
-              style={{
-                fontFamily: 'Open Sans, sans-serif',
-                color: '#4F46E5'
-              }}
-            >
-              Forgot your password?
-            </a>
-            <a 
-              href="/signup" 
-              className="block font-medium"
-              style={{
-                fontFamily: 'Open Sans, sans-serif',
-                color: '#4F46E5'
-              }}
-            >
-              Don't have an account? Sign up
-            </a>
           </div>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+        <p style={{ fontFamily: 'Open Sans, sans-serif', color: 'var(--text-secondary)' }}>Loading...</p>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

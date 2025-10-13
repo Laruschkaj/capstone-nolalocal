@@ -10,8 +10,8 @@ export interface IUser {
   isAdmin: boolean;
   verifyToken?: string;
   verifyTokenExpiry?: Date;
-  forgotPasswordToken?: string;
-  forgotPasswordTokenExpiry?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpiry?: Date;
   createdEvents: mongoose.Types.ObjectId[];
   likedEvents: mongoose.Types.ObjectId[];
   createdAt: Date;
@@ -52,10 +52,22 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    verifyToken: String,
-    verifyTokenExpiry: Date,
-    forgotPasswordToken: String,
-    forgotPasswordTokenExpiry: Date,
+    verifyToken: {
+      type: String,
+      required: false,
+    },
+    verifyTokenExpiry: {
+      type: Date,
+      required: false,
+    },
+    resetPasswordToken: {
+      type: String,
+      required: false,
+    },
+    resetPasswordExpiry: {
+      type: Date,
+      required: false,
+    },
     createdEvents: [
       {
         type: Schema.Types.ObjectId,
