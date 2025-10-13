@@ -4,11 +4,12 @@ export interface IEvent {
   _id: string;
   title: string;
   description: string;
-  date: Date;
+  date?: Date;
   time?: string;
   location: string;
   category: mongoose.Types.ObjectId;
   imageUrl?: string;
+  eventType?: 'event' | 'guide';
   source: 'user' | 'eventbrite' | 'ticketmaster';
   sourceUrl?: string;
   externalId?: string;
@@ -36,7 +37,9 @@ const EventSchema = new Schema<IEvent>(
     },
     date: {
       type: Date,
-      required: [true, 'Event date is required'],
+      required: function(this: IEvent) {
+      return this.eventType === 'event'; // Only required for events, not guides
+      },
     },
     time: {
       type: String,
@@ -53,6 +56,13 @@ const EventSchema = new Schema<IEvent>(
       ref: 'Category',
       required: [true, 'Event category is required'],
     },
+    
+    eventType: {
+      type: String,
+      enum: ['event', 'guide'],
+      default: 'event',
+    },
+
     imageUrl: {
       type: String,
       trim: true,

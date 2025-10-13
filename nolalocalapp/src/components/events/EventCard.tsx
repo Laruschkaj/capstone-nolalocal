@@ -1,4 +1,3 @@
-//EventCard
 'use client';
 
 import { useState } from 'react';
@@ -6,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEventCardColor, getTextColor } from '@/lib/data/colorPalette';
+import VerifiedBadge from '@/components/ui/VerifiedBadge';
 
 interface EventCardProps {
   event: {
@@ -21,7 +21,9 @@ interface EventCardProps {
       color: string;
     };
     creator?: {
+      _id: string;
       username: string;
+      isAdmin?: boolean;
     };
     source?: string;
     likes?: string[];
@@ -42,7 +44,7 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
   const [liking, setLiking] = useState(false);
 
   const handleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
     
     if (!user) {
       router.push('/login');
@@ -83,6 +85,9 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
       className="rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer transform hover:scale-[1.02] p-4 relative"
       style={{ backgroundColor: bgColor }}
     >
+      {/* Verified Badge - Top Right */}
+      {event.creator?.isAdmin && <VerifiedBadge size="small" position="top-right" />}
+
       {/* Event Image */}
       {event.imageUrl && (
         <div className="relative h-56 w-full overflow-hidden rounded-2xl mb-4">

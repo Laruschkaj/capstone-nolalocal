@@ -111,52 +111,57 @@ export default function CreateEventPage() {
 };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-    try {
-      let imageUrl = '';
+  try {
+    let imageUrl = '';
 
-      // Upload image if provided
-      if (imageFile) {
-        setUploading(true);
-        imageUrl = await uploadToCloudinary(imageFile);
-        setUploading(false);
-      }
-
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          date,
-          time,
-          location,
-          category,
-          imageUrl: imageUrl || undefined,
-          eventType, // For future use
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        setError(data.message);
-        setLoading(false);
-        return;
-      }
-
-      router.push('/events');
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-      setLoading(false);
+    // Upload image if provided
+    if (imageFile) {
+      setUploading(true);
+      imageUrl = await uploadToCloudinary(imageFile);
+      setUploading(false);
     }
-  };
+
+    const response = await fetch('/api/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        date: eventType === 'event' ? date : undefined, // Only send date for events
+        time: eventType === 'event' ? time : undefined, // Only send time for events
+        location,
+        category,
+        imageUrl: imageUrl || undefined,
+        eventType, // Save the type
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setError(data.message);
+      setLoading(false);
+      return;
+    }
+
+    // Redirect based on type
+    if (eventType === 'guide') {
+      router.push('/guides');
+    } else {
+      router.push('/events');
+    }
+  } catch (err) {
+    setError('An error occurred. Please try again.');
+    setLoading(false);
+  }
+};
 
   return (
     <ProtectedRoute>

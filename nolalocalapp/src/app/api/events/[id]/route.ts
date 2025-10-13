@@ -15,7 +15,7 @@ export async function GET(
 
     const event = await Event.findById(id)
       .populate('category', 'name slug color')
-      .populate('creator', 'username email')
+      .populate('creator', 'username email isAdmin')
       .populate('likes', 'username');
 
     if (!event) {
@@ -86,7 +86,7 @@ export async function PUT(
       { new: true, runValidators: true }
     )
       .populate('category', 'name slug color')
-      .populate('creator', 'username email');
+      .populate('creator', 'username email isAdmin');
 
     return successResponse({ event: updatedEvent }, 'Event updated successfully');
   } catch (error: any) {

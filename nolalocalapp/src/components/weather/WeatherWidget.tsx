@@ -42,22 +42,25 @@ export default function WeatherWidget() {
   const tempF = `${weather.temp}°F`;
   const tempC = `${Math.round((weather.temp - 32) * 5/9)}°C`;
 
-  const weatherText = `— ${dayOfWeek}   ${weather.condition.toUpperCase()} ${tempF} / ${tempC} — `;
+  const weatherText = `${dayOfWeek}   ${weather.condition.toUpperCase()} ${tempF} / ${tempC}`;
 
   return (
-    <div className="overflow-hidden" style={{ width: '400px', fontFamily: 'Bebas Neue, sans-serif' }}>
+    <div className="overflow-hidden" style={{ width: '350px', fontFamily: 'Bebas Neue, sans-serif' }}>
       <motion.div
         animate={{ x: ['0%', '-50%'] }}
         transition={{
-          duration: 20,
+          duration: 15,
           ease: 'linear',
           repeat: Infinity,
         }}
-        className="flex whitespace-nowrap text-base"
+        className="flex whitespace-nowrap text-sm"
         style={{ color: 'var(--text-primary)' }}
       >
-        <span>{weatherText}</span>
-        <span>{weatherText}</span>
+        {/* Duplicate the text 4 times for seamless loop */}
+        <span className="px-4">— {weatherText} —</span>
+        <span className="px-4">— {weatherText} —</span>
+        <span className="px-4">— {weatherText} —</span>
+        <span className="px-4">— {weatherText} —</span>
       </motion.div>
     </div>
   );

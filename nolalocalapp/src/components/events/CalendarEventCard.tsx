@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEventCardColor, getTextColor } from '@/lib/data/colorPalette';
+import VerifiedBadge from '@/components/ui/VerifiedBadge';
 
 interface CalendarEventCardProps {
   event: {
@@ -19,6 +20,11 @@ interface CalendarEventCardProps {
       _id: string;
       name: string;
       color: string;
+    };
+    creator?: {
+      _id: string;
+      username: string;
+      isAdmin?: boolean;
     };
     likes?: string[];
     likesCount?: number;
@@ -77,6 +83,9 @@ export default function CalendarEventCard({ event, onLikeUpdate }: CalendarEvent
       className="rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer transform hover:scale-[1.02] p-4 relative"
       style={{ backgroundColor: bgColor, minHeight: '280px' }}
     >
+      {/* Verified Badge - Top Right */}
+      {event.creator?.isAdmin && <VerifiedBadge size="small" position="top-right" />}
+
       {/* Event Image */}
       {event.imageUrl && (
         <div className="relative h-40 w-full overflow-hidden rounded-2xl mb-4">

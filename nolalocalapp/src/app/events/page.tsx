@@ -23,8 +23,12 @@ interface Event {
     color: string;
   };
   creator?: {
+    _id: string;
     username: string;
+    isAdmin?: boolean;
   };
+  likes?: string[];
+  likesCount?: number;
 }
 
 // ============================================

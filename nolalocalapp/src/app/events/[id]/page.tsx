@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/layout/Navigation';
 import { getEventCardColor, getTextColor } from '@/lib/data/colorPalette';
+import VerifiedBadge from '@/components/ui/VerifiedBadge';
 
 interface Event {
   _id: string;
@@ -24,6 +25,7 @@ interface Event {
   creator?: {
     _id: string;
     username: string;
+    isAdmin?: boolean;
   };
   likes: string[];
   likesCount: number;
@@ -229,9 +231,13 @@ const handleLike = async () => {
       {/* Content */}
       <main className="max-w-5xl mx-auto px-6 pb-12">
         <div 
-          className="rounded-3xl overflow-hidden shadow-2xl p-8"
+          className="rounded-3xl overflow-hidden shadow-2xl p-8 relative"
           style={{ backgroundColor: bgColor }}
         >
+
+          {/* Verified Badge - Top Right */}
+            {event.creator?.isAdmin && <VerifiedBadge size="medium" position="top-right" />}
+
           {/* Event Image - Inset */}
           {event.imageUrl && (
             <div className="relative w-full h-96 overflow-hidden rounded-2xl mb-8">

@@ -13,12 +13,17 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const status = searchParams.get('status') || 'upcoming';
     const search = searchParams.get('search');
-    const month = searchParams.get('month'); // NEW: e.g., "10" for October
-    const year = searchParams.get('year'); // NEW: e.g., "2025"
-    const limit = searchParams.get('limit'); // NEW: for featured events
+    const month = searchParams.get('month');
+    const year = searchParams.get('year');
+    const limit = searchParams.get('limit');
+    const eventType = searchParams.get('eventType');
 
     // Build query
     let query: any = { status };
+
+    if (eventType) {
+      query.eventType = eventType;
+    }
 
     if (category) {
       query.category = category;
@@ -32,7 +37,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // NEW: Filter by month and year for calendar
+    // Filter by month and year for calendar
     if (month && year) {
       const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
       const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);
@@ -44,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     const events = await Event.find(query)
       .populate('category', 'name slug color')
-      .populate('creator', 'username')
+      .populate('creator', 'username isAdmin') 
       .sort({ date: 1 })
       .limit(limit ? parseInt(limit) : 100);
 
@@ -55,7 +60,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/events - Create new event
+// POST /api/events - Create new event or guide
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
@@ -73,23 +78,41 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, date, time, location, category, imageUrl } = body;
+    const { title, description, date, time, location, category, imageUrl, eventType } = body;
 
-    if (!title || !description || !date || !location || !category) {
+    // Basic validation
+    if (!title || !description || !location || !category) {
       return errorResponse('Missing required fields');
     }
 
-    const event = await Event.create({
+    // Validate based on eventType
+    const type = eventType || 'event';
+    
+    if (type === 'event' && !date) {
+      return errorResponse('Date is required for events');
+    }
+
+    // Create event data
+    const eventData: any = {
       title,
       description,
-      date: new Date(date + 'T00:00:00'),
-      time,
       location,
       category,
       imageUrl,
       creator: payload.userId,
       source: 'user',
-    });
+      eventType: type,
+    };
+
+    // Only add date/time for events (not guides)
+    if (type === 'event') {
+      eventData.date = new Date(date + 'T00:00:00');
+      if (time) {
+        eventData.time = time;
+      }
+    }
+
+    const event = await Event.create(eventData);
 
     const populatedEvent = await Event.findById(event._id)
       .populate('category', 'name slug color')
@@ -97,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     return successResponse(
       { event: populatedEvent },
-      'Event created successfully',
+      `${type === 'guide' ? 'Guide' : 'Event'} created successfully`,
       201
     );
   } catch (error: any) {

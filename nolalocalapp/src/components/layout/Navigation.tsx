@@ -52,6 +52,16 @@ export default function Navigation() {
               >
                 EVENTS
               </button>
+              <button 
+                onClick={() => router.push('/guides')} 
+                className="font-semibold transition-all uppercase cursor-pointer hover:opacity-70"
+                style={{
+                  color: 'var(--text-primary)',
+                  fontWeight: pathname === '/guides' ? 'bold' : '600'
+                }}
+              >
+                GUIDES
+              </button>
             </div>
           </div>
 
@@ -183,6 +193,20 @@ export default function Navigation() {
                   }}
                 >
                   EVENTS
+                </button>
+
+                <button
+                  onClick={() => {
+                    router.push('/guides');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="font-semibold text-left uppercase cursor-pointer"
+                  style={{ 
+                    fontFamily: 'Open Sans, sans-serif',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  GUIDES
                 </button>
 
                 <button

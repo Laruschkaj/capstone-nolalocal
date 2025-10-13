@@ -33,11 +33,13 @@ export async function GET(request: NextRequest) {
     // Get created events
     const createdEvents = await Event.find({ creator: userId })
       .populate('category', 'name slug color')
+      .populate('creator', 'username isAdmin')
       .sort({ date: 1 });
 
     // Get liked events
     const likedEvents = await Event.find({ likes: userId })
       .populate('category', 'name slug color')
+      .populate('creator', 'username isAdmin')
       .sort({ date: 1 });
 
     return successResponse({
