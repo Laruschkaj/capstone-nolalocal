@@ -13,7 +13,7 @@ NolaLocal connects locals and visitors with curated events and insider recommend
 
 ## Quick Links
 
-- [Live Application](https://your-vercel-url.vercel.app) (Add after deployment)
+- [Live Application](https://nolalocal.vercel.app)
 - [Application README](./nolalocalapp/README.md) - Setup and technical documentation
 - [GitHub Repository](https://github.com/yourusername/capstone-nolalocal)
 

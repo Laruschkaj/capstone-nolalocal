@@ -254,3 +254,5 @@ Project Link: [https://github.com/Laruschkaj/capstone-nolalocal](https://github.
 - Next.js documentation and community
 - MongoDB University
 - The New Orleans tech community
+
+- [Live Application](https://nolalocal.vercel.app) - Production deployment
