@@ -21,6 +21,15 @@ export async function GET(request: NextRequest) {
     // Build query
     let query: any = { status };
 
+    // CRITICAL FIX: Hide past events (only show upcoming)
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Start of today
+    
+    // Only apply date filter to events (not guides which may not have dates)
+    if (!eventType || eventType === 'event') {
+      query.date = { $gte: now };
+    }
+
     if (eventType) {
       query.eventType = eventType;
     }
@@ -37,7 +46,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Filter by month and year for calendar
+    // Filter by month and year for calendar (overrides the date filter above)
     if (month && year) {
       const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
       const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);

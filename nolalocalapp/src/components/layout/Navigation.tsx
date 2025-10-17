@@ -31,38 +31,42 @@ export default function Navigation() {
             >
               NolaLocal
             </h1>
-            <div className="flex gap-6 text-sm" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-              <button 
-                onClick={() => router.push('/calendar')} 
-                className="font-semibold transition-all uppercase cursor-pointer hover:opacity-70"
-                style={{
-                  color: 'var(--text-primary)',
-                  fontWeight: pathname === '/calendar' ? 'bold' : '600'
-                }}
-              >
-                CALENDAR
-              </button>
-              <button 
-                onClick={() => router.push('/events')} 
-                className="font-semibold transition-all uppercase cursor-pointer hover:opacity-70"
-                style={{
-                  color: 'var(--text-primary)',
-                  fontWeight: pathname === '/events' ? 'bold' : '600'
-                }}
-              >
-                EVENTS
-              </button>
-              <button 
-                onClick={() => router.push('/guides')} 
-                className="font-semibold transition-all uppercase cursor-pointer hover:opacity-70"
-                style={{
-                  color: 'var(--text-primary)',
-                  fontWeight: pathname === '/guides' ? 'bold' : '600'
-                }}
-              >
-                GUIDES
-              </button>
-            </div>
+            
+            {/* Only show navigation links if user is logged in */}
+            {user && (
+              <div className="flex gap-6 text-sm" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <button 
+                  onClick={() => router.push('/calendar')} 
+                  className="font-semibold transition-all uppercase cursor-pointer hover:opacity-70"
+                  style={{
+                    color: 'var(--text-primary)',
+                    fontWeight: pathname === '/calendar' ? 'bold' : '600'
+                  }}
+                >
+                  CALENDAR
+                </button>
+                <button 
+                  onClick={() => router.push('/events')} 
+                  className="font-semibold transition-all uppercase cursor-pointer hover:opacity-70"
+                  style={{
+                    color: 'var(--text-primary)',
+                    fontWeight: pathname === '/events' ? 'bold' : '600'
+                  }}
+                >
+                  EVENTS
+                </button>
+                <button 
+                  onClick={() => router.push('/guides')} 
+                  className="font-semibold transition-all uppercase cursor-pointer hover:opacity-70"
+                  style={{
+                    color: 'var(--text-primary)',
+                    fontWeight: pathname === '/guides' ? 'bold' : '600'
+                  }}
+                >
+                  GUIDES
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Center - Weather Widget */}
@@ -72,25 +76,30 @@ export default function Navigation() {
 
           {/* Right Side */}
           <div className="flex items-center gap-4">
-            {user?.isAdmin && (
-              <button
-                onClick={() => router.push('/admin')}
-                className="hover:opacity-70 transition-opacity cursor-pointer"
-                style={{ color: 'var(--text-primary)' }}
-                title="Admin Dashboard"
-              >
-                <span className="material-symbols-outlined">admin_panel_settings</span>
-              </button>
-            )}
+            {/* Only show these buttons if user is logged in */}
+            {user && (
+              <>
+                {user.isAdmin && (
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                    style={{ color: 'var(--text-primary)' }}
+                    title="Admin Dashboard"
+                  >
+                    <span className="material-symbols-outlined">admin_panel_settings</span>
+                  </button>
+                )}
 
-            <button 
-              onClick={() => router.push('/events/create')}
-              className="hover:opacity-70 transition-opacity cursor-pointer"
-              style={{ color: 'var(--text-primary)' }}
-              title="Create Event"
-            >
-              <span className="material-symbols-outlined">add</span>
-            </button>
+                <button 
+                  onClick={() => router.push('/events/create')}
+                  className="hover:opacity-70 transition-opacity cursor-pointer"
+                  style={{ color: 'var(--text-primary)' }}
+                  title="Create Event"
+                >
+                  <span className="material-symbols-outlined">add</span>
+                </button>
+              </>
+            )}
 
             <ThemeToggle />
 
@@ -167,111 +176,120 @@ export default function Navigation() {
               className="lg:hidden overflow-hidden mt-4"
             >
               <div className="flex flex-col gap-4 py-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => {
-                    router.push('/calendar');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="font-semibold text-left uppercase cursor-pointer"
-                  style={{ 
-                    fontFamily: 'Open Sans, sans-serif',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  CALENDAR
-                </button>
-                
-                <button
-                  onClick={() => {
-                    router.push('/events');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="font-semibold text-left uppercase cursor-pointer"
-                  style={{ 
-                    fontFamily: 'Open Sans, sans-serif',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  EVENTS
-                </button>
+                {/* Only show navigation if logged in */}
+                {user ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        router.push('/calendar');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="font-semibold text-left uppercase cursor-pointer"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      CALENDAR
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        router.push('/events');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="font-semibold text-left uppercase cursor-pointer"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      EVENTS
+                    </button>
 
-                <button
-                  onClick={() => {
-                    router.push('/guides');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="font-semibold text-left uppercase cursor-pointer"
-                  style={{ 
-                    fontFamily: 'Open Sans, sans-serif',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  GUIDES
-                </button>
+                    <button
+                      onClick={() => {
+                        router.push('/guides');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="font-semibold text-left uppercase cursor-pointer"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      GUIDES
+                    </button>
 
-                <button
-                  onClick={() => {
-                    router.push('/events/create');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="font-semibold text-left uppercase cursor-pointer"
-                  style={{ 
-                    fontFamily: 'Open Sans, sans-serif',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  CREATE EVENT
-                </button>
+                    <button
+                      onClick={() => {
+                        router.push('/events/create');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="font-semibold text-left uppercase cursor-pointer"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      CREATE EVENT
+                    </button>
 
-                {user && (
-                  <button
-                    onClick={() => {
-                      router.push('/profile');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="font-semibold text-left uppercase cursor-pointer"
-                    style={{ 
-                      fontFamily: 'Open Sans, sans-serif',
-                      color: 'var(--text-primary)'
-                    }}
-                  >
-                    MY DASHBOARD
-                  </button>
-                )}
+                    <button
+                      onClick={() => {
+                        router.push('/profile');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="font-semibold text-left uppercase cursor-pointer"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      MY DASHBOARD
+                    </button>
 
-                {user?.isAdmin && (
-                  <button
-                    onClick={() => {
-                      router.push('/admin');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="font-semibold text-left uppercase cursor-pointer"
-                    style={{ 
-                      fontFamily: 'Open Sans, sans-serif',
-                      color: 'var(--text-primary)'
-                    }}
-                  >
-                    ADMIN DASHBOARD
-                  </button>
-                )}
-
-                {!user && (
-                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex flex-col gap-2">
+                    {user.isAdmin && (
                       <button
-                        onClick={() => router.push('/login')}
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer"
-                        style={{ color: 'var(--text-primary)' }}
+                        onClick={() => {
+                          router.push('/admin');
+                          setMobileMenuOpen(false);
+                        }}
+                        className="font-semibold text-left uppercase cursor-pointer"
+                        style={{ 
+                          fontFamily: 'Open Sans, sans-serif',
+                          color: 'var(--text-primary)'
+                        }}
                       >
-                        Login
+                        ADMIN DASHBOARD
                       </button>
-                      <button
-                        onClick={() => router.push('/signup')}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg cursor-pointer"
-                      >
-                        Sign Up
-                      </button>
-                    </div>
+                    )}
+                  </>
+                ) : (
+                  /* Show login/signup when not logged in */
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)', fontFamily: 'Open Sans, sans-serif' }}>
+                      Sign up to explore events and guides in New Orleans
+                    </p>
+                    <button
+                      onClick={() => {
+                        router.push('/login');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={() => {
+                        router.push('/signup');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg cursor-pointer"
+                    >
+                      Sign Up
+                    </button>
                   </div>
                 )}
               </div>
