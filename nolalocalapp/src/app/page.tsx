@@ -48,17 +48,25 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle scroll for nav reveal
+  // Handle scroll for nav reveal AND auto-show after hero animation
   useEffect(() => {
+  // Auto-show nav after hero content finishes (button appears at 0.9s + 1s animation = 1.9s total)
+    const timer = setTimeout(() => {
+     setShowNav(true);
+    }, 2000); // Show nav 2 seconds after page load
+
     const handleScroll = () => {
-      if (window.scrollY > 100) {
-        setShowNav(true);
-      } else {
-        setShowNav(false);
+     if (window.scrollY > 100) {
+      setShowNav(true);
       }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+  
+  window.addEventListener('scroll', handleScroll);
+  
+  return () => {
+    clearTimeout(timer);
+    window.removeEventListener('scroll', handleScroll);
+  };
   }, []);
 
   // Fetch featured events
@@ -110,8 +118,20 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Sticky Navigation - only show after scroll */}
-      {showNav && <Navigation />}
+    {/* Sticky Navigation - fade in smoothly, positioned absolute so it doesn't push content */}
+    <AnimatePresence>
+      {showNav && (
+       <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="fixed top-0 left-0 right-0 z-50"
+        >
+          <Navigation />
+        </motion.div>
+    )}
+    </AnimatePresence>
 
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
