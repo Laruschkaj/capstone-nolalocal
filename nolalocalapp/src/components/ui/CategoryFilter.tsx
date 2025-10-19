@@ -45,80 +45,68 @@ export default function CategoryFilter({
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <label 
-        className="text-sm font-semibold"
-        style={{ 
+    <div className="relative" ref={dropdownRef}>
+      {/* Dropdown Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-4 py-2 rounded-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 flex items-center gap-2 min-w-[180px] justify-between"
+        style={{
           fontFamily: 'Open Sans, sans-serif',
-          color: 'var(--text-primary)'
+          backgroundColor: 'var(--card-bg)',
+          color: 'var(--text-primary)',
+          border: '1px solid var(--border-color)'
         }}
       >
-        Filter:
-      </label>
+        <span>{selectedCategoryName}</span>
+        <span 
+          className="material-symbols-outlined text-sm transition-transform"
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        >
+          expand_more
+        </span>
+      </button>
 
-      <div className="relative" ref={dropdownRef}>
-        {/* Dropdown Button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="px-4 py-2 rounded-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 flex items-center gap-2 min-w-[180px] justify-between"
+      {/* Dropdown Menu */}
+      {isOpen && (
+        <div 
+          className="absolute top-full mt-2 rounded-lg shadow-xl overflow-hidden z-50 min-w-[180px]"
           style={{
-            fontFamily: 'Open Sans, sans-serif',
             backgroundColor: 'var(--card-bg)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-color)'
+            border: '1px solid var(--border-color)',
+            maxHeight: '300px',
+            overflowY: 'auto'
           }}
         >
-          <span>{selectedCategoryName}</span>
-          <span 
-            className="material-symbols-outlined text-sm transition-transform"
-            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-          >
-            expand_more
-          </span>
-        </button>
-
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <div 
-            className="absolute top-full mt-2 rounded-lg shadow-xl overflow-hidden z-50 min-w-[180px]"
+          {/* All Categories Option */}
+          <button
+            onClick={() => handleSelect('')}
+            className="w-full px-4 py-2 text-left transition-colors hover:opacity-70"
             style={{
-              backgroundColor: 'var(--card-bg)',
-              border: '1px solid var(--border-color)',
-              maxHeight: '300px', // Limit height
-              overflowY: 'auto'   // Add scroll
+              fontFamily: 'Open Sans, sans-serif',
+              backgroundColor: selectedCategory === '' ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+              color: 'var(--text-primary)'
             }}
           >
-            {/* All Categories Option */}
+            ✓ All Categories
+          </button>
+
+          {/* Category Options */}
+          {categories.map((category) => (
             <button
-              onClick={() => handleSelect('')}
+              key={category._id}
+              onClick={() => handleSelect(category._id)}
               className="w-full px-4 py-2 text-left transition-colors hover:opacity-70"
               style={{
                 fontFamily: 'Open Sans, sans-serif',
-                backgroundColor: selectedCategory === '' ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+                backgroundColor: selectedCategory === category._id ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
                 color: 'var(--text-primary)'
               }}
             >
-              ✓ All Categories
+              {category.name}
             </button>
-
-            {/* Category Options */}
-            {categories.map((category) => (
-              <button
-                key={category._id}
-                onClick={() => handleSelect(category._id)}
-                className="w-full px-4 py-2 text-left transition-colors hover:opacity-70"
-                style={{
-                  fontFamily: 'Open Sans, sans-serif',
-                  backgroundColor: selectedCategory === category._id ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

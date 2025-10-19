@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/layout/Navigation';
 import EventCard from '@/components/events/EventCard';
+import CategoryFilter from '@/components/ui/CategoryFilter';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
-
 interface Event {
   _id: string;
   title: string;
@@ -21,7 +21,9 @@ interface Event {
     color: string;
   };
   creator?: {
+    _id: string;
     username: string;
+    isAdmin?: boolean;
   };
   source?: string;
   likes?: string[];
@@ -31,6 +33,7 @@ interface Event {
 interface Category {
   _id: string;
   name: string;
+  slug: string;
   color: string;
 }
 
@@ -42,7 +45,7 @@ export default function ProfilePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'created' | 'liked'>('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   useEffect(() => {
     fetchProfile();
@@ -126,13 +129,13 @@ export default function ProfilePage() {
     }
 
     // Apply category filter
-    if (categoryFilter !== 'all') {
+    if (categoryFilter) {
       events = events.filter(event => event.category._id === categoryFilter);
     }
 
-    // Remove duplicates and sort by date
+    // Remove duplicates and sort by date (newest first)
     const uniqueEvents = Array.from(new Map(events.map(e => [e._id, e])).values());
-    return uniqueEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return uniqueEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
 
   const filteredEvents = getFilteredEvents();
@@ -166,7 +169,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-4 mb-8">
+          <div className="flex flex-wrap items-center gap-4 mb-8">
             {/* Event Type Filter */}
             <div className="flex gap-2">
               <button
@@ -174,7 +177,7 @@ export default function ProfilePage() {
                 className="px-4 py-2 rounded-full text-sm font-semibold transition-colors"
                 style={{ 
                   fontFamily: 'Open Sans, sans-serif',
-                  backgroundColor: filter === 'all' ? '#1F2937' : 'var(--card-bg)',
+                  backgroundColor: filter === 'all' ? '#4F46E5' : 'var(--card-bg)',
                   color: filter === 'all' ? '#FFFFFF' : 'var(--text-primary)',
                   border: filter === 'all' ? 'none' : '1px solid var(--border-color)'
                 }}
@@ -186,7 +189,7 @@ export default function ProfilePage() {
                 className="px-4 py-2 rounded-full text-sm font-semibold transition-colors"
                 style={{ 
                   fontFamily: 'Open Sans, sans-serif',
-                  backgroundColor: filter === 'created' ? '#1F2937' : 'var(--card-bg)',
+                  backgroundColor: filter === 'created' ? '#4F46E5' : 'var(--card-bg)',
                   color: filter === 'created' ? '#FFFFFF' : 'var(--text-primary)',
                   border: filter === 'created' ? 'none' : '1px solid var(--border-color)'
                 }}
@@ -198,7 +201,7 @@ export default function ProfilePage() {
                 className="px-4 py-2 rounded-full text-sm font-semibold transition-colors"
                 style={{ 
                   fontFamily: 'Open Sans, sans-serif',
-                  backgroundColor: filter === 'liked' ? '#1F2937' : 'var(--card-bg)',
+                  backgroundColor: filter === 'liked' ? '#4F46E5' : 'var(--card-bg)',
                   color: filter === 'liked' ? '#FFFFFF' : 'var(--text-primary)',
                   border: filter === 'liked' ? 'none' : '1px solid var(--border-color)'
                 }}
@@ -208,22 +211,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Category Filter */}
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-              style={{ 
-                fontFamily: 'Open Sans, sans-serif',
-                backgroundColor: 'var(--card-bg)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-color)'
-              }}
-            >
-              <option value="all">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
-            </select>
+            <CategoryFilter
+              categories={categories}
+              selectedCategory={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+            />
 
             {/* Create Event Button */}
             <button
