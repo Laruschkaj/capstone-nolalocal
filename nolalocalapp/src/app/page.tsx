@@ -116,14 +116,14 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         {/* Background Images with Parallax */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentImageIndex}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 1.4, ease: [0.25, 1, 0.5, 1] }}
-            className="absolute inset-0"
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentImageIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+              className="absolute inset-0"
           >
             <div
               className="absolute inset-0 bg-cover bg-center"
