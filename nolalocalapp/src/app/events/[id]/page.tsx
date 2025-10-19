@@ -29,6 +29,7 @@ interface Event {
   };
   likes: string[];
   likesCount: number;
+  eventType?: string;
 }
 
 export default function EventDetailPage() {
@@ -132,6 +133,12 @@ const handleLike = async () => {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;
+  };
+  // Check if date is valid
+  const hasValidDate = (dateString?: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
   };
 
   if (loading) {
@@ -277,6 +284,8 @@ const handleLike = async () => {
 
           {/* Event Details - Vertical Layout */}
           <div className="mb-8 space-y-4">
+            {/* Only show date if it's valid */}
+            {hasValidDate(event.date) && (
            <div>
             <p 
                className="font-bold text-sm mb-1 uppercase"
@@ -295,7 +304,9 @@ const handleLike = async () => {
              })}
            </p>
          </div>
+        )}
 
+      {/* Only show time if it exists */}
       {event.time && (
       <div>
       <p 
@@ -312,19 +323,19 @@ const handleLike = async () => {
     </div>
   )}
 
-  <div>
-    <p 
-      className="font-bold text-sm mb-1 uppercase"
-      style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8, fontSize: '16px' }}
-    >
-      LOCATION:
-    </p>
-    <p 
-      style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '16px' }}
-    >
-      {event.location}
-    </p>
-  </div>
+      <div>
+       <p 
+         className="font-bold text-sm mb-1 uppercase"
+         style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.8, fontSize: '16px' }}
+        >
+       LOCATION:
+       </p>
+       <p 
+        style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', fontSize: '16px' }}
+        >
+          {event.location}
+        </p>
+      </div>
           </div>
 
           {/* Description */}
@@ -389,14 +400,16 @@ const handleLike = async () => {
                   )}
             </button>
             
-            {isExternalEvent && (
-              <p 
-                className="text-sm font-semibold uppercase tracking-wide"
-                style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.7 }}
-              >
-                {event.source === 'ticketmaster' ? 'Ticketmaster' : 'Eventbrite'}
-              </p>
-            )}
+            {/* Creator/Source Name - Lowercase */}
+            <p 
+              className="text-sm font-semibold tracking-wide"
+              style={{ color: textColor, fontFamily: 'Open Sans, sans-serif', opacity: 0.7 }}
+            >
+              {isExternalEvent 
+                ? event.source.toLowerCase()
+                : event.creator?.username?.toLowerCase() || 'unknown'
+              }
+            </p>
           </div>
         </div>
       </main>
