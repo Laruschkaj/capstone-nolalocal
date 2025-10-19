@@ -54,25 +54,32 @@ export default function AdminDashboard() {
   }, [user]);
 
   const fetchDashboard = async () => {
-    try {
-      const response = await fetch('/api/admin/dashboard', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
+  try {
+    const response = await fetch('/api/admin/dashboard', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
 
-      if (data.success) {
-        setStats(data.data.stats);
-        setRecentEvents(data.data.recentEvents);
-        setAllUsers(data.data.allUsers);
-      }
-    } catch (error) {
-      console.error('Error fetching admin dashboard:', error);
-    } finally {
-      setLoading(false);
+    if (data.success) {
+      setStats(data.data.stats);
+      setRecentEvents(data.data.recentEvents);
+      
+      // Sort users: admins first, then by username
+      const sortedUsers = [...data.data.allUsers].sort((a, b) => {
+        if (a.isAdmin && !b.isAdmin) return -1;
+        if (!a.isAdmin && b.isAdmin) return 1;
+        return a.username.localeCompare(b.username);
+      });
+      setAllUsers(sortedUsers);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching admin dashboard:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSyncEvents = async () => {
     if (!confirm('Manually sync events from Ticketmaster and Eventbrite?')) return;
@@ -265,7 +272,7 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Recent Events */}
+              {/* Recent Events - Scrollable on Mobile */}
               <div className="mb-8">
                 <h2 
                   className="text-3xl font-bold mb-4"
@@ -276,130 +283,137 @@ export default function AdminDashboard() {
                 >
                   RECENT EVENTS
                 </h2>
-                <div 
-                  className="rounded-2xl shadow-md overflow-hidden"
-                  style={{ backgroundColor: 'var(--card-bg)' }}
-                >
-                  <table className="w-full">
-                    <thead 
-                      style={{ 
-                        backgroundColor: 'rgba(128, 128, 128, 0.1)'
-                      }}
-                    >
-                      <tr>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Title
-                        </th>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Category
-                        </th>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Source
-                        </th>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Creator
-                        </th>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Date
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
-                      {recentEvents.map(event => (
-                        <tr 
-                          key={event._id} 
-                          onClick={() => router.push(`/events/${event._id}`)}
-                          className="cursor-pointer transition-colors"
-                          style={{ borderBottom: '1px solid var(--border-color)' }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(128, 128, 128, 0.05)'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                        >
-                          <td 
-                            className="px-6 py-4 text-sm"
+                {/* Scrollable wrapper */}
+                <div className="overflow-x-auto">
+                  <div 
+                    className="rounded-2xl shadow-md overflow-hidden min-w-[640px]"
+                    style={{ backgroundColor: 'var(--card-bg)' }}
+                  >
+                    <table className="w-full">
+                      <thead 
+                        style={{ 
+                          backgroundColor: 'rgba(128, 128, 128, 0.1)'
+                        }}
+                      >
+                        <tr>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
                             style={{ 
                               fontFamily: 'Open Sans, sans-serif',
-                              color: 'var(--text-primary)'
+                              color: 'var(--text-secondary)'
                             }}
                           >
-                            {event.title}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span 
-                              className="inline-block px-3 py-1 rounded-full text-xs font-semibold"
+                            Title
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
+                            Category
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
+                            Source
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
+                            Creator
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
+                            Date
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
+                        {recentEvents.map(event => (
+                          <tr 
+                            key={event._id} 
+                            onClick={() => router.push(`/events/${event._id}`)}
+                            className="cursor-pointer transition-colors"
+                            style={{ borderBottom: '1px solid var(--border-color)' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(128, 128, 128, 0.05)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <td 
+                              className="px-6 py-4 text-sm"
                               style={{ 
-                                backgroundColor: event.category.color + '20',
-                                color: event.category.color,
-                                fontFamily: 'Open Sans, sans-serif'
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-primary)'
                               }}
                             >
-                              {event.category.name}
-                            </span>
-                          </td>
-                          <td 
-                            className="px-6 py-4 text-sm"
-                            style={{ 
-                              fontFamily: 'Open Sans, sans-serif',
-                              color: 'var(--text-secondary)'
-                            }}
-                          >
-                            {event.source}
-                          </td>
-                          <td 
-                            className="px-6 py-4 text-sm"
-                            style={{ 
-                              fontFamily: 'Open Sans, sans-serif',
-                              color: 'var(--text-secondary)'
-                            }}
-                          >
-                            {event.creator?.username || 'External'}
-                          </td>
-                          <td 
-                            className="px-6 py-4 text-sm"
-                            style={{ 
-                              fontFamily: 'Open Sans, sans-serif',
-                              color: 'var(--text-secondary)'
-                            }}
-                          >
-                            {new Date(event.date).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                              {event.title}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span 
+                                className="inline-block px-3 py-1 rounded-full text-xs font-semibold"
+                                style={{ 
+                                  backgroundColor: event.category.color + '20',
+                                  color: event.category.color,
+                                  fontFamily: 'Open Sans, sans-serif'
+                                }}
+                              >
+                                {event.category.name}
+                              </span>
+                            </td>
+                            <td 
+                              className="px-6 py-4 text-sm"
+                              style={{ 
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-secondary)'
+                              }}
+                            >
+                              {event.source}
+                            </td>
+                            <td 
+                              className="px-6 py-4 text-sm"
+                              style={{ 
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-secondary)'
+                              }}
+                            >
+                              {event.creator?.username || 'External'}
+                            
+                            </td>
+                            <td 
+                              className="px-6 py-4 text-sm"
+                              style={{ 
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-secondary)'
+                              }}
+                            >
+                              {event.date && !isNaN(new Date(event.date).getTime())
+                                ? new Date(event.date).toLocaleDateString()
+                                : 'N/A'
+                              }
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
-              {/* All Users */}
+              {/* All Users - Scrollable on Mobile */}
               <div>
                 <h2 
                   className="text-3xl font-bold mb-4"
@@ -410,112 +424,115 @@ export default function AdminDashboard() {
                 >
                   ALL USERS
                 </h2>
-                <div 
-                  className="rounded-2xl shadow-md overflow-hidden"
-                  style={{ backgroundColor: 'var(--card-bg)' }}
-                >
-                  <table className="w-full">
-                    <thead 
-                      style={{ 
-                        backgroundColor: 'rgba(128, 128, 128, 0.1)'
-                      }}
-                    >
-                      <tr>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Username
-                        </th>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Email
-                        </th>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Role
-                        </th>
-                        <th 
-                          className="px-6 py-3 text-left text-xs font-bold uppercase"
-                          style={{ 
-                            fontFamily: 'Open Sans, sans-serif',
-                            color: 'var(--text-secondary)'
-                          }}
-                        >
-                          Joined
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
-                      {allUsers.map(u => (
-                        <tr 
-                          key={u._id}
-                          className="transition-colors"
-                          style={{ borderBottom: '1px solid var(--border-color)' }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(128, 128, 128, 0.05)'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                        >
-                          <td 
-                            className="px-6 py-4 text-sm"
-                            style={{ 
-                              fontFamily: 'Open Sans, sans-serif',
-                              color: 'var(--text-primary)'
-                            }}
-                          >
-                            {u.username}
-                          </td>
-                          <td 
-                            className="px-6 py-4 text-sm"
+                {/* Scrollable wrapper */}
+                <div className="overflow-x-auto">
+                  <div 
+                    className="rounded-2xl shadow-md overflow-hidden min-w-[800px]"
+                    style={{ backgroundColor: 'var(--card-bg)' }}
+                  >
+                    <table className="w-full">
+                      <thead 
+                        style={{ 
+                          backgroundColor: 'rgba(128, 128, 128, 0.1)'
+                        }}
+                      >
+                        <tr>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
                             style={{ 
                               fontFamily: 'Open Sans, sans-serif',
                               color: 'var(--text-secondary)'
                             }}
                           >
-                            {u.email}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span 
-                              className="inline-block px-3 py-1 rounded-full text-xs font-semibold"
-                              style={{ 
-                              fontFamily: 'Open Sans, sans-serif',
-                              backgroundColor: u.isAdmin 
-                              ? '#E9D5FF'  // Purple for Admin
-                              : 'var(--card-bg)',  // Uses card background variable
-                              color: u.isAdmin 
-                              ? '#6B21A8'   // Dark purple text for Admin
-                              : 'var(--text-secondary)',  // Gray text matching table secondary text
-                              border: u.isAdmin ? 'none' : '1px solid var(--border-color)'  // Add subtle border for User badge
-                              }}
-                             >
-                             {u.isAdmin ? 'Admin' : 'User'}
-                            </span>
-                          </td>
-                          <td 
-                            className="px-6 py-4 text-sm"
+                            Username
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
                             style={{ 
                               fontFamily: 'Open Sans, sans-serif',
                               color: 'var(--text-secondary)'
                             }}
                           >
-                            {new Date(u.createdAt).toLocaleDateString()}
-                          </td>
+                            Email
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
+                            Role
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-bold uppercase"
+                            style={{ 
+                              fontFamily: 'Open Sans, sans-serif',
+                              color: 'var(--text-secondary)'
+                            }}
+                          >
+                            Joined
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
+                        {allUsers.map(u => (
+                          <tr 
+                            key={u._id}
+                            className="transition-colors"
+                            style={{ borderBottom: '1px solid var(--border-color)' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(128, 128, 128, 0.05)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <td 
+                              className="px-6 py-4 text-sm"
+                              style={{ 
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-primary)'
+                              }}
+                            >
+                              {u.username}
+                            </td>
+                            <td 
+                              className="px-6 py-4 text-sm"
+                              style={{ 
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-secondary)'
+                              }}
+                            >
+                              {u.email}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span 
+                                className="inline-block px-3 py-1 rounded-full text-xs font-semibold"
+                                style={{ 
+                                  fontFamily: 'Open Sans, sans-serif',
+                                  backgroundColor: u.isAdmin 
+                                    ? '#E9D5FF'
+                                    : 'var(--card-bg)',
+                                  color: u.isAdmin 
+                                    ? '#6B21A8'
+                                    : 'var(--text-secondary)',
+                                  border: u.isAdmin ? 'none' : '1px solid var(--border-color)'
+                                }}
+                              >
+                                {u.isAdmin ? 'Admin' : 'User'}
+                              </span>
+                            </td>
+                            <td 
+                              className="px-6 py-4 text-sm"
+                              style={{ 
+                                fontFamily: 'Open Sans, sans-serif',
+                                color: 'var(--text-secondary)'
+                              }}
+                            >
+                              {new Date(u.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </>
