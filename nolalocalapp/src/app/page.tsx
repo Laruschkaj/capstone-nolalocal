@@ -157,18 +157,22 @@ export default function LandingPage() {
               textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
             }}
           >
-            Discover music, arts, food, and culture in the heart of NOLA
+            {/* Dynamic text based on login status */}
+            {user 
+              ? 'Discover music, arts, food, and culture in the heart of NOLA'
+              : 'Sign up to discover music, arts, food, and culture in the heart of NOLA'
+            }
           </motion.p>
 
           <motion.button
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6, ease: [0.25, 1, 0.5, 1] }}
-            onClick={() => router.push('/events')}
+            onClick={() => router.push(user ? '/events' : '/signup')}
             className="px-12 py-4 bg-white text-gray-900 text-lg font-semibold rounded-2xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl mb-8"
             style={{ fontFamily: 'Open Sans, sans-serif' }}
           >
-            Explore
+            {user ? 'Explore' : 'Sign Up'}
           </motion.button>
 
           {/* Scroll Indicator */}
@@ -214,7 +218,7 @@ export default function LandingPage() {
             color: 'var(--text-primary)'
           }}
         >
-          Featured Events
+          Featured
         </motion.h2>
 
         {/* Carousel Container */}
@@ -224,23 +228,23 @@ export default function LandingPage() {
             onClick={scrollLeftFn}
             disabled={!canScrollLeft}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+            style={{ 
+              marginLeft: '-40px',
+              backgroundColor: canScrollLeft ? 'rgba(255, 255, 255, 0.3)' : 'rgba(128, 128, 128, 0.15)',
+              cursor: canScrollLeft ? 'pointer' : 'not-allowed',
+              opacity: canScrollLeft ? 1 : 0.4
+            }}
+          >
+            <span 
+              className="material-symbols-outlined"
               style={{ 
-                marginLeft: '-40px',
-                backgroundColor: canScrollLeft ? 'rgba(255, 255, 255, 0.3)' : 'rgba(128, 128, 128, 0.15)',
-                cursor: canScrollLeft ? 'pointer' : 'not-allowed',
-                opacity: canScrollLeft ? 1 : 0.4
-             }}
-            >
-          <span 
-               className="material-symbols-outlined"
-               style={{ 
                 color: 'var(--text-primary)',
-               fontSize: '64px',
-              fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48"
-             }}
+                fontSize: '64px',
+                fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48"
+              }}
             >
-             chevron_left
-           </span>
+              chevron_left
+            </span>
           </button>
 
           {/* Scrollable Container */}
@@ -259,28 +263,27 @@ export default function LandingPage() {
           </div>
 
           {/* Right Arrow */}
-          {/* Right Arrow */}
           <button
-             onClick={scrollRightFn}
-             disabled={!canScrollRight}
-             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+            onClick={scrollRightFn}
+            disabled={!canScrollRight}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
             style={{ 
-             marginRight: '-40px',
-             backgroundColor: canScrollRight ? 'rgba(255, 255, 255, 0.3)' : 'rgba(128, 128, 128, 0.15)',
-             cursor: canScrollRight ? 'pointer' : 'not-allowed',
-             opacity: canScrollRight ? 1 : 0.4
-           }}
+              marginRight: '-40px',
+              backgroundColor: canScrollRight ? 'rgba(255, 255, 255, 0.3)' : 'rgba(128, 128, 128, 0.15)',
+              cursor: canScrollRight ? 'pointer' : 'not-allowed',
+              opacity: canScrollRight ? 1 : 0.4
+            }}
+          >
+            <span 
+              className="material-symbols-outlined"
+              style={{ 
+                color: 'var(--text-primary)',
+                fontSize: '64px',
+                fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48"
+              }}
             >
-          <span 
-           className="material-symbols-outlined"
-            style={{ 
-            color: 'var(--text-primary)',
-            fontSize: '64px',
-            fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48"
-           }}
-           >
-           chevron_right
-           </span>
+              chevron_right
+            </span>
           </button>
         </div>
 
@@ -293,11 +296,11 @@ export default function LandingPage() {
           className="text-center mt-12"
         >
           <button
-            onClick={() => router.push('/events')}
+            onClick={() => router.push(user ? '/events' : '/signup')}
             className="px-8 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors text-lg font-semibold"
             style={{ fontFamily: 'Open Sans, sans-serif' }}
           >
-            View All Events →
+            {user ? 'View All Events →' : 'Sign Up to View All Events →'}
           </button>
         </motion.div>
       </section>

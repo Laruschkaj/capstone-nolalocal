@@ -28,6 +28,7 @@ interface EventCardProps {
     source?: string;
     likes?: string[];
     likesCount?: number;
+    eventType?: string;
   };
   index?: number;
   onLikeUpdate?: () => void;
@@ -82,7 +83,7 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       onClick={() => router.push(`/events/${event._id}`)}
-      className="rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer transform hover:scale-[1.02] p-4 relative"
+      className="rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer transform hover:scale-[1.02] p-4 relative h-[420px] flex flex-col"
       style={{ backgroundColor: bgColor }}
     >
       {/* Verified Badge - Top Right */}
@@ -90,7 +91,7 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
 
       {/* Event Image */}
       {event.imageUrl && (
-        <div className="relative h-56 w-full overflow-hidden rounded-2xl mb-4">
+        <div className="relative h-56 w-full overflow-hidden rounded-2xl mb-4 flex-shrink-0">
           <img
             src={event.imageUrl}
             alt={event.title}
@@ -99,9 +100,9 @@ export default function EventCard({ event, index = 0, onLikeUpdate }: EventCardP
         </div>
       )}
 
-      {/* Title */}
+      {/* Title - with line clamp */}
       <h3 
-        className="text-3xl font-bold mb-16 leading-tight"
+        className="text-3xl font-bold mb-2 leading-tight line-clamp-3 flex-grow"
         style={{ 
           color: textColor,
           fontFamily: 'Bebas Neue, sans-serif',
