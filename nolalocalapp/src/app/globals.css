@@ -9,6 +9,8 @@
   --text-primary: #000000;
   --text-secondary: #4B5563;
   --icon-filter: invert(0);
+  --selected-date-bg: #1F2937;
+  --selected-date-text: #FFFFFF;
 }
 
 .dark {
@@ -20,6 +22,8 @@
   --text-primary: #FFFFFF;
   --text-secondary: #D1D5DB;
   --icon-filter: invert(1);
+  --selected-date-bg: #FFFFFF;
+  --selected-date-text: #1F2937;
 }
 
 @theme inline {

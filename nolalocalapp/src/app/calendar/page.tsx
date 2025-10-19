@@ -250,8 +250,8 @@ export default function CalendarPage() {
                         className="aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-all relative"
                         style={{ 
                           fontFamily: 'Open Sans, sans-serif',
-                          backgroundColor: isSelected && !isPast ? '#1F2937' : 'transparent',
-                          color: isSelected && !isPast ? '#FFFFFF' : isPast ? 'rgba(128, 128, 128, 0.3)' : 'var(--text-primary)',
+                          backgroundColor: isSelected && !isPast ? 'var(--selected-date-bg)' : 'transparent',
+                          color: isSelected && !isPast ? 'var(--selected-date-text)' : isPast ? 'rgba(128, 128, 128, 0.3)' : 'var(--text-primary)',
                           border: isToday && !isSelected && !isPast ? '2px solid var(--text-primary)' : 'none',
                           fontWeight: isSelected || isToday ? 'bold' : 'normal',
                           cursor: !day || isPast ? 'not-allowed' : 'pointer'
