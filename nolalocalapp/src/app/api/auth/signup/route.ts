@@ -28,6 +28,21 @@ export async function POST(request: NextRequest) {
       return errorResponse('All fields are required');
     }
 
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return errorResponse('Please provide a valid email address');
+    }
+
+    // Username validation
+    if (username.length < 3) {
+      return errorResponse('Username must be at least 3 characters long');
+    }
+
+    if (username.length > 30) {
+      return errorResponse('Username cannot exceed 30 characters');
+    }
+
     // Password strength validation
     if (password.length < 8) {
       return errorResponse('Password must be at least 8 characters long');
@@ -39,15 +54,15 @@ export async function POST(request: NextRequest) {
 
     // Check existing user
     const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
+      $or: [{ email: email.toLowerCase() }, { username }],
     });
 
     if (existingUser) {
-      if (existingUser.email === email) {
-        return errorResponse('Email already registered');
+      if (existingUser.email === email.toLowerCase()) {
+        return errorResponse('This email is already registered. Please sign in or use a different email.');
       }
       if (existingUser.username === username) {
-        return errorResponse('Username already taken');
+        return errorResponse('This username is already taken. Please choose a different username.');
       }
     }
 
@@ -58,24 +73,24 @@ export async function POST(request: NextRequest) {
     // Create user
     const user = await User.create({
       username,
-      email,
+      email: email.toLowerCase(),
       password,
       verifyToken,
       verifyTokenExpiry,
     });
 
+    console.log('✅ User created:', user.username);
     console.log('✅ Verification token:', verifyToken);
 
     // Send verification email
     try {
-      console.log('📧 Attempting to send email to:', user.email);
-      console.log('📧 Using SendGrid:', !!process.env.SENDGRID_API_KEY);
-      console.log('📧 From email:', process.env.SENDGRID_FROM_EMAIL);
-      
+      console.log('📧 Sending verification email to:', user.email);
       await sendVerifyEmail(user.email, user.username, verifyToken);
-      console.log('✅ Verification email sent');
-    } catch (error) {
-      console.error('❌ Email error:', error);
+      console.log('✅ Verification email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError);
+      // Don't fail signup if email fails - user is still created
+      console.log('⚠️ User created but verification email failed to send');
     }
 
     return successResponse(
@@ -93,6 +108,19 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Signup error:', error);
-    return errorResponse('Server error during registration', 500);
+
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err: any) => err.message);
+      return errorResponse(messages[0] || 'Validation error');
+    }
+
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return errorResponse(`This ${field} is already registered. Please use a different ${field}.`);
+    }
+
+    return errorResponse('An error occurred during registration. Please try again.');
   }
 }
