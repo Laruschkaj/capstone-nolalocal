@@ -264,35 +264,7 @@ export default function ProfilePage() {
               ))}
             </div>
           )}
-
-          {/* Account Actions */}
-          <div className="mt-12 pt-8" style={{ borderTop: '1px solid var(--border-color)' }}>
-            <h2 
-              className="text-2xl font-bold mb-4"
-              style={{ 
-                fontFamily: 'Bebas Neue, sans-serif',
-                color: 'var(--text-primary)'
-              }}
-            >
-              ACCOUNT SETTINGS
-            </h2>
-            <div className="flex gap-4">
-              <button
-                onClick={handleLogout}
-                className="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
-              >
-                Logout
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
-              >
-                Delete Account
-              </button>
-            </div>
-          </div>
+          
         </main>
       </div>
     </ProtectedRoute>

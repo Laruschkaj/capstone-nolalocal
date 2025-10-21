@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,8 +10,55 @@ import ThemeToggle from '@/components/ui/ThemeToggle';
 export default function Navigation() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout, token } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleDeleteAccount = async () => {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/users/profile', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Account deleted successfully');
+        logout();
+        router.push('/');
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      alert('Error deleting account');
+    }
+  };
+
+  const handleLogout = () => {
+    setDropdownOpen(false);
+    logout();
+    router.push('/');
+  };
 
   return (
     <nav style={{ backgroundColor: 'var(--nav-bg)' }} className="backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300">
@@ -79,17 +126,6 @@ export default function Navigation() {
             {/* Only show these buttons if user is logged in */}
             {user && (
               <>
-                {user.isAdmin && (
-                  <button
-                    onClick={() => router.push('/admin')}
-                    className="hover:opacity-70 transition-opacity cursor-pointer"
-                    style={{ color: 'var(--text-primary)' }}
-                    title="Admin Dashboard"
-                  >
-                    <span className="material-symbols-outlined">admin_panel_settings</span>
-                  </button>
-                )}
-
                 <button 
                   onClick={() => router.push('/events/create')}
                   className="hover:opacity-70 transition-opacity cursor-pointer"
@@ -103,20 +139,114 @@ export default function Navigation() {
 
             <ThemeToggle />
 
-            {user && (
-              <button
-                onClick={() => router.push('/profile')}
-                className="text-sm hover:opacity-70 font-medium transition-opacity underline cursor-pointer"
+            {user ? (
+              /* Username Dropdown */
+              <div className="relative" ref={dropdownRef}>
+                <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors hover:opacity-80"
                 style={{ 
                   fontFamily: 'Open Sans, sans-serif',
-                  color: 'var(--text-primary)'
+                  color: 'var(--text-primary)',
+                  backgroundColor: 'rgba(128, 128, 128, 0.1)'
                 }}
-              >
-                Hi, {user.username}!
+                >
+                <span className="font-semibold">Hi, {user.username}!</span>
+                <span 
+                className="material-symbols-outlined text-sm transition-transform"
+                style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                >
+                expand_more
+                </span>
               </button>
-            )}
 
-            {!user && (
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl overflow-hidden"
+                      style={{
+                        backgroundColor: 'var(--card-bg)',
+                        border: '1px solid var(--border-color)'
+                      }}
+                    >
+                      {/* My Dashboard */}
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          router.push('/profile');
+                        }}
+                        className="w-full px-4 py-3 text-left flex items-center gap-3 transition-colors hover:opacity-70"
+                        style={{
+                          fontFamily: 'Open Sans, sans-serif',
+                          color: 'var(--text-primary)'
+                        }}
+                      >
+                        <span className="material-symbols-outlined">dashboard</span>
+                        <span className="font-semibold">My Dashboard</span>
+                      </button>
+
+                      {/* Admin Dashboard (if admin) */}
+                      {user.isAdmin && (
+                        <button
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            router.push('/admin');
+                          }}
+                          className="w-full px-4 py-3 text-left flex items-center gap-3 transition-colors hover:opacity-70"
+                          style={{
+                            fontFamily: 'Open Sans, sans-serif',
+                            color: 'var(--text-primary)'
+                          }}
+                        >
+                          <span className="material-symbols-outlined">admin_panel_settings</span>
+                          <span className="font-semibold">Admin Dashboard</span>
+                        </button>
+                      )}
+
+                      {/* Divider */}
+                      <div style={{ height: '1px', backgroundColor: 'var(--border-color)' }} />
+
+                      {/* Logout */}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-3 text-left flex items-center gap-3 transition-colors hover:opacity-70"
+                        style={{
+                          fontFamily: 'Open Sans, sans-serif',
+                          color: 'var(--text-primary)'
+                        }}
+                      >
+                        <span className="material-symbols-outlined">logout</span>
+                        <span className="font-semibold">Logout</span>
+                      </button>
+
+                      {/* Divider */}
+                      <div style={{ height: '1px', backgroundColor: 'var(--border-color)' }} />
+
+                      {/* Delete Account */}
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          handleDeleteAccount();
+                        }}
+                        className="w-full px-4 py-3 text-left flex items-center gap-3 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                        style={{
+                          fontFamily: 'Open Sans, sans-serif',
+                          color: '#DC2626'
+                        }}
+                      >
+                        <span className="material-symbols-outlined">delete_forever</span>
+                        <span className="font-semibold">Delete Account</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
               <>
                 <button
                   onClick={() => router.push('/login')}
@@ -264,6 +394,39 @@ export default function Navigation() {
                         ADMIN DASHBOARD
                       </button>
                     )}
+
+                    {/* Divider */}
+                    <div style={{ height: '1px', backgroundColor: 'var(--border-color)', margin: '8px 0' }} />
+
+                    {/* Logout */}
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="font-semibold text-left uppercase cursor-pointer"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      LOGOUT
+                    </button>
+
+                    {/* Delete Account */}
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleDeleteAccount();
+                      }}
+                      className="font-semibold text-left uppercase cursor-pointer"
+                      style={{ 
+                        fontFamily: 'Open Sans, sans-serif',
+                        color: '#DC2626'
+                      }}
+                    >
+                      DELETE ACCOUNT
+                    </button>
                   </>
                 ) : (
                   /* Show login/signup when not logged in */
